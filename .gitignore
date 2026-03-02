@@ -1,0 +1,79 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+jspm_packages/
+
+# Next.js Build Output
+.next/
+out/
+build/
+
+# NestJS Build Output
+backend/dist/
+backend/node_modules/
+backend/tsconfig.tsbuildinfo
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.docker
+backend/.env
+backend/.env.test
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Debug
+.node_repl_history
+instrumented
+.nyc_output
+
+# Testing
+coverage
+.jest
+
+# OS Specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDEs and Editors
+.visualstudio
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+.project
+.settings/
+
+# Prisma
+backend/prisma/migrations/
+# Only ignore migrations if you want to baseline, 
+# but usually migrations SHOULD be committed. 
+# I will keep them commented out.
+# !backend/prisma/migrations/
+
+# Docker
+.docker
+*.tsbuildinfo
+
+# Local Data
+postgres_data/
+redis_data/

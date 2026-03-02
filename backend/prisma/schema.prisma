@@ -1,0 +1,352 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ============ TENANTS & USERS ============
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // Added for Context Budgeting & Cost Control
+  tokenBudgetMonthly Int      @default(1000000)
+  currentMonthTokens Int      @default(0)
+
+  users              User[]
+  startupProfiles    StartupProfile[]
+  conversations      Conversation[]
+  goals              Goal[]
+  tasks              Task[]
+  memoryStore        MemoryStore[]
+  memoryRelations    MemoryRelation[]
+  roadmaps           Roadmap[]
+  executiveBriefings ExecutiveBriefing[]
+  aiTokenUsage       AITokenUsage[]
+  toolExecutionLogs  ToolExecutionLog[]
+
+  @@index([deletedAt])
+}
+
+model User {
+  id        String   @id @default(uuid())
+  tenantId  String
+  email     String
+  password  String // bcrypt hashed
+  name      String?
+  role      String   @default("founder") // founder, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations      Conversation[]
+  tasks              Task[]
+  toolExecutionLogs  ToolExecutionLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([deletedAt])
+}
+
+// ============ STARTUP & STRATEGY ============
+
+model StartupProfile {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  
+  name              String // e.g., "TechCorp"
+  stage             String // "idea", "pre-seed", "seed", "series-a", etc.
+  description       String
+  currentMetrics    Json   // { revenue: 0, mrr: 0, users: 0, churn: 0 }
+  target            String // Market/TAM description
+  competitiveEdge   String
+  fundingRaised     Float  @default(0)
+  runway            Int    @default(12) // months
+  team              Json   // [{ name, role, expertise }]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  tenant        Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  goals         Goal[]
+  conversations Conversation[]
+
+  @@unique([tenantId])
+  @@index([tenantId])
+  @@index([deletedAt])
+}
+
+model Goal {
+  id        String   @id @default(uuid())
+  tenantId  String
+  profileId String
+  
+  title     String
+  deadline  DateTime
+  metrics   Json     // { target: value }
+  priority  Int      @default(5) // 1-10, higher = more important
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  startupProfile StartupProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+
+  @@index([tenantId, profileId])
+  @@index([deletedAt])
+}
+
+// ============ CONVERSATIONS & MESSAGES ============
+
+model Conversation {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  profileId String
+  
+  title     String   @default("Chat")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startupProfile StartupProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  messages       Message[]
+
+  @@index([tenantId, userId])
+  @@index([deletedAt])
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  conversationId  String
+  tenantId        String
+  
+  role            String   // "user" or "assistant"
+  content         String   // plain text
+  tokensUsed      Int      @default(0)
+  costEstimate    Float    @default(0) // in USD
+  
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, conversationId])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+// ============ MEMORY SYSTEM ============
+
+enum MemorySourceType {
+  CHAT
+  DOCUMENT
+  WEB_SEARCH
+}
+
+enum MemoryType {
+  DECISION
+  HYPOTHESIS
+  FACT
+}
+
+enum RelationType {
+  SUPPORTS
+  CONTRADICTS
+  REFINES
+  DERIVED_FROM
+}
+
+model MemoryStore {
+  id        String   @id @default(uuid())
+  tenantId  String
+  
+  insight   String   // extracted key insight
+  context   String   // original conversation or document context
+  salience  Float    @default(0.5) // 0-1, importance score
+  frequency Int      @default(1)   // how many times mentioned
+  
+  // Knowledge Vault Extension
+  sourceType        MemorySourceType @default(CHAT)
+  fileUrl           String?          // URL to original doc if sourceType is DOCUMENT
+  isStrategicAnchor Boolean          @default(false) // Core business pillar
+  
+  // Added for Compaction Layer
+  isSummarized  Boolean  @default(false)
+  parentId      String?  // References the summarized memory if this was merged
+  
+  // Level 3.5 Extensions: Strategic Ledger
+  memoryType      MemoryType @default(HYPOTHESIS)
+  isConfirmed     Boolean    @default(false)
+  strategyWeight  Float      @default(0.5) // 0.0 - 1.0 reasoning importance
+  evidenceScore   Float      @default(0.0) // 0.0: Assertion | 0.3: Signal | 0.7: Grounded | 1.0: Verified
+  lastReferencedAt DateTime? 
+
+  // New field for semantic search (384 for all-MiniLM-L6-v2)
+  embedding Unsupported("vector(384)")?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastUsed  DateTime @updatedAt
+  deletedAt DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  outgoingRelations MemoryRelation[] @relation("SourceRelation")
+  incomingRelations MemoryRelation[] @relation("TargetRelation")
+
+  @@index([tenantId, salience])
+  @@index([tenantId, isSummarized, sourceType])
+  @@index([tenantId, isConfirmed, memoryType])
+  @@index([tenantId, deletedAt, createdAt])
+  @@index([lastUsed])
+  @@index([deletedAt])
+}
+
+model MemoryRelation {
+  id           String       @id @default(uuid())
+  tenantId     String       
+  sourceId     String       
+  targetId     String       
+  type         RelationType
+  confidence   Float        @default(1.0)
+  reasoning    String?      
+  
+  createdAt    DateTime     @default(now())
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source       MemoryStore  @relation("SourceRelation", fields: [sourceId], references: [id], onDelete: Cascade)
+  target       MemoryStore  @relation("TargetRelation", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([sourceId, targetId])
+}
+
+// ============ TOOL AUDIT LOG ============
+
+model ToolExecutionLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  userId      String
+  
+  toolName    String
+  parameters  Json     // The arguments passed by the AI
+  result      Json?    // Execution result or error
+  status      String   // "SUCCESS", "FAILED", "DENIED"
+  
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+}
+
+// ============ ROADMAPS & TASKS ============
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  BLOCKED
+}
+
+model Task {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String   // Assigned to/Created by
+  goalId    String?  // Optional: Link to a specific high-level goal
+  roadmapId String?  // Optional: Link to a specific roadmap initiative
+
+  title       String
+  description String?  @db.Text
+  status      TaskStatus @default(TODO)
+  priority    Int        @default(5) // 1-10
+  dueDate     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal    Goal?    @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  roadmap Roadmap? @relation(fields: [roadmapId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status])
+  @@index([userId])
+  @@index([goalId])
+  @@index([deletedAt])
+}
+
+model Roadmap {
+  id        String   @id @default(uuid())
+  tenantId  String
+  
+  summary       String
+  objectives    Json   // [{ title, why, success_metric }]
+  initiatives   Json   // [{ title, deadline, tasks[] }]
+  rawResponse   String // full AI response (audit trail)
+  
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tasks  Task[]
+
+  @@index([tenantId, createdAt])
+  @@index([deletedAt])
+}
+
+// ============ AI TOKEN TRACKING ============
+
+model AITokenUsage {
+  id        String   @id @default(uuid())
+  tenantId  String
+  
+  endpoint      String   // "chat", "roadmap"
+  inputTokens   Int
+  outputTokens  Int
+  costUSD       Float
+  
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+}
+
+// ============ EXECUTIVE BRIEFINGS ============
+
+model ExecutiveBriefing {
+  id        String   @id @default(uuid())
+  tenantId  String
+  
+  date      String   // Format: YYYY-MM-DD
+  content   String   @db.Text
+  analysis  Json     // { strategic_priority, risks, opportunities }
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, date])
+  @@index([tenantId])
+}
