@@ -57,13 +57,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 
-interface StartupProfile {
-  name: string;
-  stage: string;
-  description: string;
-  runway: number;
-  fundingRaised?: number;
-}
+import { useStrategicStore, StartupProfile, StrategicMemory, Task } from '@/lib/store/use-strategic-store';
 
 interface ExecutiveBriefing {
   content: string;
@@ -82,64 +76,45 @@ interface MemoryRelation {
   };
 }
 
-interface StrategicMemory {
-  id: string;
-  insight: string;
-  memoryType: 'DECISION' | 'HYPOTHESIS' | 'FACT';
-  isConfirmed: boolean;
-  strategyWeight: number;
-  evidenceScore: number;
-  createdAt: string;
-  outgoingRelations: MemoryRelation[];
-}
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'BLOCKED';
-  priority: number;
-  dueDate?: string;
-  goal?: { title: string };
-}
-
 export default function DashboardPage() {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [profile, setProfile] = useState<StartupProfile | null>(null);
   const [briefing, setBriefing] = useState<ExecutiveBriefing | null>(null);
-  const [ledger, setLedger] = useState<StrategicMemory[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const router = useRouter();
 
+  // Zustand Store
+  const { 
+    profile, 
+    confirmedStrategy, 
+    emergingObservations, 
+    tasks, 
+    loading, 
+    fetchDashboardData 
+  } = useStrategicStore();
+
+  const ledger = [...confirmedStrategy, ...emergingObservations];
+
   useEffect(() => {
     setMounted(true);
-    loadData();
+    fetchDashboardData().then(() => {
+      // Logic for checking if profile exists
+      if (!useStrategicStore.getState().profile) {
+        // Double check after fetch
+        setTimeout(() => {
+          if (!useStrategicStore.getState().profile && !useStrategicStore.getState().loading) {
+            router.push('/auth/onboarding');
+          }
+        }, 1000);
+      }
+    });
   }, []);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const data = await ApiClient.get('/startup/dashboard');
-      
-      setProfile(data.profile);
-      setBriefing(data.briefing);
-      setLedger(data.ledger || []);
-      setTasks(data.tasks || []);
-
-      if (!data.briefing) {
-        fetchLatestBriefing();
-      }
-    } catch (error: any) {
-      if (error.message?.includes('not found') || error.message?.includes('404')) {
-        router.push('/auth/onboarding');
-      }
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!loading && profile && !briefing) {
+      fetchLatestBriefing();
     }
-  };
+  }, [loading, profile]);
 
   const fetchLatestBriefing = async () => {
     try {
@@ -154,8 +129,8 @@ export default function DashboardPage() {
     setProcessingId(id);
     try {
       await ApiClient.patch(`/ledger/${id}/confirm`, { weight: 0.8 });
-      const ledgerData = await ApiClient.get('/ledger');
-      setLedger(ledgerData || []);
+      // Refresh global store
+      await fetchDashboardData();
     } catch (e) {
       console.error('Failed to confirm memory:', e);
     } finally {
@@ -167,7 +142,8 @@ export default function DashboardPage() {
     setProcessingId(id);
     try {
       await ApiClient.delete(`/ledger/${id}`);
-      setLedger((prev) => prev.filter((m) => m.id !== id));
+      // Refresh global store
+      await fetchDashboardData();
     } catch (e) {
       console.error('Failed to purge memory:', e);
     } finally {

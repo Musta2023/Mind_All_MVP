@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAccessToken } from '@/lib/api-client';
+import { getAccessToken, API_URL } from '@/lib/api-client';
 import Navigation from '@/components/Navigation';
+import { useStrategicStore } from '@/lib/store/use-strategic-store';
 
 export default function ProtectedLayout({
   children,
@@ -12,18 +13,53 @@ export default function ProtectedLayout({
 }) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const updateVaultProgress = useStrategicStore(state => state.updateVaultProgress);
+  const fetchDashboardData = useStrategicStore(state => state.fetchDashboardData);
 
   useEffect(() => {
     const checkAuth = async () => {
       const token = await getAccessToken();
       if (!token) {
         router.push('/auth/login');
+        return;
       }
       setMounted(true);
+      
+      // Initialize SSE for vault progress
+      const setupSSE = async () => {
+        const accessToken = await getAccessToken();
+        const eventSource = new EventSource(`${API_URL}/vault/progress?token=${accessToken}`);
+        
+        eventSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.status === 'COMPLETED') {
+              updateVaultProgress(100, true);
+              setTimeout(() => {
+                updateVaultProgress(0, false);
+                fetchDashboardData();
+              }, 2000);
+            } else if (data.status === 'FAILED') {
+              updateVaultProgress(0, false);
+            } else {
+              updateVaultProgress(data.progress || 0, true);
+            }
+          } catch (e) {
+            console.error('SSE Layout: Failed to parse message', e);
+          }
+        };
+
+        return () => eventSource.close();
+      };
+
+      const cleanup = setupSSE();
+      return () => {
+        cleanup.then(fn => fn?.());
+      };
     };
 
     checkAuth();
-  }, [router]);
+  }, [router, updateVaultProgress, fetchDashboardData]);
 
   if (!mounted) {
     return (

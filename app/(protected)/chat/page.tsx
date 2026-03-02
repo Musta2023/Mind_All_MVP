@@ -269,6 +269,8 @@ const TaskCardItem = ({ status, content, priority }: { status: string, content: 
   );
 };
 
+import { useStrategicStore } from '@/lib/store/use-strategic-store';
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -280,8 +282,14 @@ export default function ChatPage() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
-  const [confirmedStrategy, setConfirmedStrategy] = useState<any[]>([]);
-  const [emergingObservations, setEmergingObservations] = useState<any[]>([]);
+
+  // Zustand Store
+  const { 
+    confirmedStrategy, 
+    emergingObservations, 
+    fetchDashboardData,
+    profile 
+  } = useStrategicStore();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -290,20 +298,10 @@ export default function ChatPage() {
 
   useEffect(() => {
     loadConversations();
-    loadActiveStrategy();
-  }, []);
-
-  const loadActiveStrategy = async () => {
-    try {
-      // If we have a conversationId, the backend already returns this.
-      // But for a new chat, we can fetch general strategy health
-      const data = await ApiClient.get('/startup/dashboard');
-      setConfirmedStrategy(data.ledger?.filter((m: any) => m.isConfirmed) || []);
-      setEmergingObservations(data.ledger?.filter((m: any) => !m.isConfirmed) || []);
-    } catch (error) {
-      console.error('Failed to load strategy:', error);
+    if (!profile) {
+      fetchDashboardData();
     }
-  };
+  }, []);
 
   const loadConversations = async () => {
     try {
@@ -321,9 +319,9 @@ export default function ChatPage() {
       setMessages(data.messages || []);
       setConversationId(id);
       setShowHistory(false);
-
-      if (data.confirmedStrategy) setConfirmedStrategy(data.confirmedStrategy);
-      if (data.emergingObservations) setEmergingObservations(data.emergingObservations);
+      
+      // Refresh global store to sync any new insights from history
+      fetchDashboardData();
     } catch (error) {
       console.error('Failed to load conversation:', error);
     } finally {

@@ -37,65 +37,21 @@ interface Document {
   size?: number;
 }
 
+import { useStrategicStore } from '@/lib/store/use-strategic-store';
+
 export default function VaultPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  
+  // Zustand Store
+  const { vaultProgress, isVaultUploading, updateVaultProgress } = useStrategicStore();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadDocuments();
-
-    // Set up SSE for ingestion progress
-    const setupSSE = async () => {
-      try {
-        const accessToken = await (await import('@/lib/api-client')).getAccessToken();
-        const eventSource = new EventSource(`${API_URL}/vault/progress?token=${accessToken}`);
-        
-        eventSource.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.status === 'COMPLETED') {
-              setUploadProgress(100);
-              setTimeout(() => {
-                setUploading(false);
-                setUploadProgress(0);
-                loadDocuments();
-              }, 1000);
-            } else if (data.status === 'FAILED') {
-              setUploading(false);
-              setUploadProgress(0);
-              alert(`Ingestion failed: ${data.message}`);
-            } else {
-              setUploadProgress(data.progress || 0);
-              setUploading(true);
-            }
-          } catch (e) {
-            console.error('Failed to parse SSE message:', e);
-          }
-        };
-
-        eventSource.onerror = () => {
-          console.warn('SSE connection lost, reconnecting...');
-          eventSource.close();
-          // Optional: Reconnect after a delay
-          setTimeout(setupSSE, 5000);
-        };
-
-        return () => eventSource.close();
-      } catch (e) {
-        console.error('Failed to set up SSE:', e);
-      }
-    };
-
-    const cleanup = setupSSE();
-    return () => {
-      cleanup.then(fn => fn?.());
-    };
   }, []);
 
   const loadDocuments = async () => {
@@ -119,19 +75,17 @@ export default function VaultPage() {
     if (!file) return;
 
     try {
-      setUploading(true);
-      setUploadProgress(5);
+      updateVaultProgress(5, true);
       
       const formData = new FormData();
       formData.append('file', file);
 
       await ApiClient.post('/vault/upload', formData);
-      // The SSE will take over the progress updates from here
+      // Global SSE in layout will handle the rest
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Failed to upload document. Please ensure the backend is running.');
-      setUploading(false);
-      setUploadProgress(0);
+      updateVaultProgress(0, false);
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
@@ -185,11 +139,11 @@ export default function VaultPage() {
               />
               <Button 
                 onClick={handleUploadClick}
-                disabled={uploading}
+                disabled={isVaultUploading}
                 className="bg-violet-600 hover:bg-violet-700 text-white rounded-full px-6 shadow-lg shadow-violet-500/20 gap-2 transition-all w-full sm:w-auto"
               >
-                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
-                {uploading ? `Ingesting (${uploadProgress}%)` : 'Upload Intelligence'}
+                {isVaultUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
+                {isVaultUploading ? `Ingesting (${vaultProgress}%)` : 'Upload Intelligence'}
               </Button>
             </div>
           </div>
