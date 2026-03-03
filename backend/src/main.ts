@@ -21,12 +21,11 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   // CORS: Allow frontend origin
-  const frontendUrl = process.env.FRONTEND_URL;
   app.enableCors({
-    origin: frontendUrl ? [frontendUrl, 'http://localhost:3000'] : 'http://localhost:3000',
+    origin: true, // Allow all origins dynamically
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   // Global validation pipe
