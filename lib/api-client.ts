@@ -1,12 +1,4 @@
-export const API_URL = (function() {
-  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  // Ensure protocol
-  if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
-    url = `https://${url}`;
-  }
-  // Ensure trailing slash for base URL
-  return url.endsWith('/') ? url : `${url}/`;
-})();
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export interface ApiOptions extends RequestInit {
   searchParams?: Record<string, string | number | boolean>;
@@ -19,9 +11,15 @@ export class ApiClient {
   ): Promise<T> {
     const { searchParams, ...fetchOptions } = options;
 
-    // Remove leading slash from endpoint since API_URL already has a trailing slash
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-    const url = new URL(cleanEndpoint, API_URL);
+    const fullUrlString = `${API_URL}${endpoint}`;
+    console.log("Checking URL construction:", {
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+      API_URL: API_URL,
+      endpoint: endpoint,
+      fullUrlString: fullUrlString
+    });
+
+    const url = new URL(fullUrlString);
 
     if (searchParams) {
       Object.entries(searchParams).forEach(([key, value]) => {
@@ -161,8 +159,7 @@ export async function refreshAccessToken(): Promise<string | null> {
   isRefreshing = true;
 
   try {
-    const refreshUrl = new URL('auth/refresh', API_URL).toString();
-    const response = await fetch(refreshUrl, {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
     });
