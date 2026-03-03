@@ -31,7 +31,7 @@ import {
   Trash2
 } from 'lucide-react';
 
-// 1. Strict Type Definitions
+// 1. Strict Type Definitions (Force Redeploy)
 interface Objective {
   title: string;
   why: string;
