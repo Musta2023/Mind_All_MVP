@@ -305,6 +305,7 @@ export default function ChatPage() {
   const [conversationId, setConversationId] = useState<string>();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showContext, setShowContext] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
@@ -605,10 +606,72 @@ export default function ChatPage() {
     </div>
   );
 
+  const ContextContent = () => (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-emerald-500/10 rounded-lg">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            </div>
+            <h4 className="text-xs font-black uppercase tracking-widest text-emerald-600">
+              Confirmed Strategy
+            </h4>
+          </div>
+          {confirmedStrategy.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic pl-8">No confirmed pillars yet.</p>
+          ) : (
+            <div className="space-y-3 pl-2">
+              {confirmedStrategy.map((item, idx) => (
+                <div key={idx} className="p-3 bg-card border border-emerald-500/10 rounded-xl shadow-sm text-sm font-medium leading-relaxed group hover:border-emerald-500/30 transition-all">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="text-foreground/90">{item.insight}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-violet-500/10 rounded-lg">
+              <Activity className="w-4 h-4 text-violet-600" />
+            </div>
+            <h4 className="text-xs font-black uppercase tracking-widest text-violet-600">
+              Emerging Observations
+            </h4>
+          </div>
+          {emergingObservations.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic pl-8">No emerging signals detected.</p>
+          ) : (
+            <div className="space-y-3 pl-2">
+              {emergingObservations.map((item, idx) => (
+                <div key={idx} className="p-3 bg-muted/50 border border-border/50 rounded-xl text-sm font-medium leading-relaxed group hover:border-violet-500/30 transition-all">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
+                    <span className="text-muted-foreground group-hover:text-foreground transition-colors">{item.insight}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="p-6 bg-muted/20 border-t border-border">
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          The Strategic Context is automatically derived from your conversations and Knowledge Vault data. It serves as the grounding layer for all AI-generated advice.
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full border-x border-border bg-card shadow-sm h-full">
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar (History) */}
         <aside className="hidden md:flex flex-col w-72 border-r border-border h-full overflow-hidden">
           <HistoryContent />
         </aside>
@@ -640,6 +703,16 @@ export default function ChatPage() {
                 </div>
               </div>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowContext(true)}
+              className="gap-2 border-violet-500/20 hover:bg-violet-500/5 text-violet-600 font-bold rounded-full transition-all"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Context
+            </Button>
           </header>
 
           {/* Messages Area */}
@@ -912,68 +985,28 @@ export default function ChatPage() {
             </form>
           </div>
         </main>
-
-        {/* Desktop Sidebar: Strategic Context */}
-        <aside className="hidden xl:flex flex-col w-80 border-l border-border h-full bg-muted/10 overflow-hidden">
-          <div className="p-4 border-b border-border bg-card">
-            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-violet-500" />
-              Strategic Context
-            </h3>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            <div className="space-y-4">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Confirmed Strategy
-              </h4>
-              {confirmedStrategy.length === 0 ? (
-                <p className="text-[11px] text-muted-foreground italic">No confirmed pillars yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {confirmedStrategy.map((item, idx) => (
-                    <div key={idx} className="p-2.5 bg-card border border-emerald-500/10 rounded-xl shadow-sm text-xs font-medium leading-relaxed group hover:border-emerald-500/30 transition-all">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                        <span className="text-foreground/90">{item.insight}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-violet-600 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                Emerging Observations
-              </h4>
-              {emergingObservations.length === 0 ? (
-                <p className="text-[11px] text-muted-foreground italic">No emerging signals detected.</p>
-              ) : (
-                <div className="space-y-2">
-                  {emergingObservations.map((item, idx) => (
-                    <div key={idx} className="p-2.5 bg-muted/50 border border-border/50 rounded-xl text-xs font-medium leading-relaxed group hover:border-violet-500/30 transition-all">
-                      <div className="flex items-start gap-2">
-                        <Activity className="w-3.5 h-3.5 text-violet-400 mt-0.5 shrink-0" />
-                        <span className="text-muted-foreground group-hover:text-foreground transition-colors">{item.insight}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </aside>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* History Drawer (Left) */}
       <Sheet open={showHistory} onOpenChange={setShowHistory}>
         <SheetContent side="left" className="p-0 w-80 bg-background border-r border-border">
           <SheetHeader className="p-4 border-b border-border text-left">
             <SheetTitle className="text-foreground">Chat History</SheetTitle>
           </SheetHeader>
           <HistoryContent />
+        </SheetContent>
+      </Sheet>
+
+      {/* Context Drawer (Right) */}
+      <Sheet open={showContext} onOpenChange={setShowContext}>
+        <SheetContent side="right" className="p-0 w-96 bg-background border-l border-border">
+          <SheetHeader className="p-4 border-b border-border text-left flex flex-row items-center gap-3">
+            <div className="p-2 bg-violet-500/10 rounded-xl">
+              <Sparkles className="w-5 h-5 text-violet-500" />
+            </div>
+            <SheetTitle className="text-foreground">Strategic Context</SheetTitle>
+          </SheetHeader>
+          <ContextContent />
         </SheetContent>
       </Sheet>
 
