@@ -38,19 +38,13 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { getAccessToken, ApiClient } from '@/lib/api-client';
+import { getAccessToken, ApiClient, API_URL } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+// ... (rest of imports)
 import { Badge } from '@/components/ui/badge';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// API_URL removed - imported from @/lib/api-client
 
 const TaskCard = ({ task }: { task: any }) => {
   const [loading, setLoading] = useState(false);
@@ -454,7 +448,8 @@ export default function ChatPage() {
 
     try {
       const token = await getAccessToken();
-      let response = await fetch(`${API_URL}/chat/send`, {
+      const chatSendUrl = new URL('chat/send', API_URL).toString();
+      let response = await fetch(chatSendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -474,12 +469,13 @@ export default function ChatPage() {
         const newToken = await refreshAccessToken();
         if (newToken) {
           // Retry once with new token
-          response = await fetch(`${API_URL}/chat/send`, {
+          response = await fetch(chatSendUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${newToken}`,
             },
+
             credentials: 'include',
             body: JSON.stringify({
               conversationId,

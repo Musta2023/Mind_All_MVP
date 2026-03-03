@@ -28,7 +28,9 @@ export default function ProtectedLayout({
       // Initialize SSE for vault progress
       const setupSSE = async () => {
         const accessToken = await getAccessToken();
-        const eventSource = new EventSource(`${API_URL}/vault/progress?token=${accessToken}`);
+        const sseUrl = new URL('vault/progress', API_URL);
+        sseUrl.searchParams.set('token', accessToken || '');
+        const eventSource = new EventSource(sseUrl.toString());
         
         eventSource.onmessage = (event) => {
           try {

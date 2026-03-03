@@ -14,24 +14,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { getAccessToken } from '@/lib/api-client';
+import { getAccessToken, API_URL, ApiClient } from '@/lib/api-client';
 import ReactMarkdown from 'react-markdown';
-import {
-  Map,
-  Target,
-  Calendar,
-  CheckCircle2,
-  Sparkles,
-  Loader2,
-  Flag,
-  BarChart3,
-  ListTodo,
-  Clock,
-  ArrowRight,
+// ... (rest of imports)
   Trash2
 } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// API_URL removed - imported from @/lib/api-client
 
 // 1. Strict Type Definitions
 interface Objective {
@@ -82,28 +71,7 @@ export default function RoadmapPage() {
 
   const loadRoadmaps = async () => {
     try {
-      const token = await getAccessToken();
-      let response = await fetch(`${API_URL}/roadmap`, {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: 'include',
-      });
-
-      if (response.status === 401) {
-        const { refreshAccessToken } = await import('@/lib/api-client');
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          response = await fetch(`${API_URL}/roadmap`, {
-            headers: { Authorization: `Bearer ${newToken}` },
-            credentials: 'include',
-          });
-        } else {
-          window.location.href = '/auth/login';
-          return;
-        }
-      }
-
-      if (!response.ok) throw new Error('Failed to fetch roadmaps');
-      const data = await response.json();
+      const data = await ApiClient.get('/roadmap');
       setRoadmaps(data.roadmaps || []);
     } catch (err) {
       console.error('Failed to load roadmaps:', err);
@@ -122,7 +90,8 @@ export default function RoadmapPage() {
 
     try {
       const token = await getAccessToken();
-      let response = await fetch(`${API_URL}/roadmap/generate`, {
+      const generateUrl = new URL('roadmap/generate', API_URL).toString();
+      let response = await fetch(generateUrl, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
@@ -132,7 +101,7 @@ export default function RoadmapPage() {
         const { refreshAccessToken } = await import('@/lib/api-client');
         const newToken = await refreshAccessToken();
         if (newToken) {
-          response = await fetch(`${API_URL}/roadmap/generate`, {
+          response = await fetch(generateUrl, {
             method: 'POST',
             headers: { Authorization: `Bearer ${newToken}` },
             credentials: 'include',
@@ -196,33 +165,7 @@ export default function RoadmapPage() {
 
   const handleDeleteRoadmap = async (id: string) => {
     try {
-      const token = await getAccessToken();
-      let response = await fetch(`${API_URL}/roadmap/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: 'include',
-      });
-
-      if (response.status === 401) {
-        const { refreshAccessToken } = await import('@/lib/api-client');
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          response = await fetch(`${API_URL}/roadmap/${id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${newToken}` },
-            credentials: 'include',
-          });
-        } else {
-          window.location.href = '/auth/login';
-          return;
-        }
-      }
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.message || 'Delete failed');
-      }
-
+      await ApiClient.delete(`/roadmap/${id}`);
       setRoadmaps((prev) => prev.filter((r) => r.id !== id));
       setRoadmapToDelete(null);
     } catch (err: any) {
