@@ -14,13 +14,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { getAccessToken, API_URL, ApiClient } from '@/lib/api-client';
+import { getAccessToken, ApiClient, API_URL } from '@/lib/api-client';
 import ReactMarkdown from 'react-markdown';
-// ... (rest of imports)
+import {
+  Map,
+  Target,
+  Calendar,
+  CheckCircle2,
+  Sparkles,
+  Loader2,
+  Flag,
+  BarChart3,
+  ListTodo,
+  Clock,
+  ArrowRight,
   Trash2
 } from 'lucide-react';
-
-// API_URL removed - imported from @/lib/api-client
 
 // 1. Strict Type Definitions
 interface Objective {

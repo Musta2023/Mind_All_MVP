@@ -40,11 +40,15 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { getAccessToken, ApiClient, API_URL } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-// ... (rest of imports)
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-
-// API_URL removed - imported from @/lib/api-client
 
 const TaskCard = ({ task }: { task: any }) => {
   const [loading, setLoading] = useState(false);
