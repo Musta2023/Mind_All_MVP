@@ -1,25 +1,27 @@
-FROM node:20-alpine
-
+# Stage 1: Build
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Enable pnpm
 RUN corepack enable pnpm
-
-# Copy package files
 COPY package.json pnpm-lock.yaml* ./
-
-# Install dependencies
 RUN pnpm i --frozen-lockfile
-
-# Copy the rest of the application code
 COPY . .
-
-# Build the Next.js application
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN pnpm build
 
-# Expose the port the app runs on
-EXPOSE 3000
+# Stage 2: Run
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Command to run the application
-CMD ["node", ".next/standalone/server.js"]
+# Standalone server doesn't include static files or public files by default
+# We copy them into the standalone folder structure
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+EXPOSE 3000
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"]
