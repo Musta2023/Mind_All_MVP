@@ -9,8 +9,6 @@ IMPLEMENTATION_SUMMARY.md
 backend/node_modules
 backend/dist
 npm-debug.log
-pnpm-lock.yaml
-package-lock.json
 .env
 .env.local
 .env.development.local
