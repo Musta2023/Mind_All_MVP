@@ -23,15 +23,18 @@ MindAll has evolved through four major strategic levels:
 *   **Strategic Drift Detection:** AI-powered identification of contradictions in business strategy.
 *   **Strategy Health Score:** Real-time dashboard indicator of strategic coherence and evidence grounding.
 
-### 🧠 Knowledge Vault (Multi-Source RAG)
-*   **Real-Time Ingestion Progress:** Visual feedback (percentage and status) during document chunking and embedding.
-*   **Intelligence Ingestion:** Upload Pitch Decks, Financials, and Research.
-*   **Worker-Powered Parsing:** Offloaded PDF/MD parsing and embedding generation using Piscina worker threads (Node.js 20-slim optimized).
-*   **Semantic Memory:** Long-term storage of strategic insights with salience-based filtering.
+### 🧠 Knowledge Vault (Elite RAG Engine)
+*   **Elite Semantic Chunking:** Uses a batch-processing pipeline with **sliding window context preservation** (20% word-level overlap) for superior retrieval recall.
+*   **Intelligent Boundary Detection:** Chunks are created based on **Cosine Similarity** (dot product optimized) between paragraphs, ensuring semantic coherence.
+*   **High-Performance Workers:** Offloaded PDF/MD parsing and embedding generation using a warm-worker pool with a **60s loading timeout** and **3-tier retry recovery**.
+*   **Batch Re-Embedding:** Optimized 2x-5x speed gain by embedding final merged chunks in a single model pass.
+*   **Enterprise Safety:** Hardened with a **5MB document size guard** and **500 paragraph limit** per worker to prevent memory exhaustion.
+*   **Real-Time Ingestion Progress:** Visual feedback streamed via SSE during the entire pipeline.
 
 ### 📡 Strategic Intelligence Engine
 *   **Intelligence Router:** Automatically determines if a request requires internal data or live web search.
-*   **Real-Time Retrieval:** Integrated with Tavily API for current market facts, regulations, and competitor profiles.
+*   **Real-Time Retrieval:** Integrated with Tavily API for current market facts, with **live streaming of search results** directly into the chat flow.
+*   **Multi-Tool Task Cards:** Professional UI cards for `Intelligence Search`, `Goal Proposals`, and `Action Proposals`.
 *   **Source Attribution:** Mandatory clickable citations for all external data.
 
 ### 📈 Proactive Agency

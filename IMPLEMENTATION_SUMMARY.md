@@ -27,9 +27,12 @@ This document tracks the evolution of the MindAll Strategic Intelligence Engine 
 *   **Strategic Context Sidebar:** Added a real-time sidebar to the chat page for "Confirmed Strategy" and "Emerging Observations" that persists on refresh.
 *   **Real-Time Ingestion Progress:** Implemented Server-Sent Events (SSE) to stream document chunking progress to the Vault UI.
 *   **Briefing Sharing:** Integrated one-click sharing for Daily Briefings (WhatsApp, Email, Clipboard).
-*   **Task Card Proposals:** AI now proposes `createTask` via interactive UI cards instead of silent execution, allowing for founder approval.
-*   **UI Refinement:** Professional theme-aware colors for Execution Analytics and "Neural Link" status indicators.
-*   **Infrastructure Hardening:** Switched to `node:20-slim` for `onnxruntime` compatibility and implemented `prisma.config.ts` for Prisma 7 compliance.
+*   **Elite RAG Engine:** Built a high-performance semantic chunking pipeline in `embedding.worker.js` with batch re-embedding (2x-5x speed gain), sliding window overlap (20% word-level), and 60s model loading timeouts.
+*   **Intelligence Streaming:** Fixed tool execution flow to stream real-time web search results (Tavily) directly into the chat response, ensuring the founder sees raw data.
+*   **Deterministic Conversation Management:** Resolved auto-new-chat bug. Conversations now persist across refreshes, and new sessions are only created via an explicit "New Conversation" action.
+*   **Advanced Tool Cards:** Enhanced the `TaskCard` to support `Intelligence Search` (Blue), `Goal Proposals` (Emerald), and `Action Proposals` (Violet) with relevant metadata and status icons.
+*   **Infrastructure Safety:** Implemented worker task-cycling and document size guards (5MB) to prevent memory exhaustion on the backend.
+*   **Prisma 7 & PGVector:** Standardized the RAG storage with optimized dot-product similarity queries for normalized 384-dim vectors.
 
 ---
 

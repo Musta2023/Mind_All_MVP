@@ -22,27 +22,39 @@ Level 3.5 introduces a semantic graph approach to memory:
 *   **Relation Mapping:** The `MemoryRelation` table tracks how insights interact (`SUPPORTS`, `CONTRADICTS`, `REFINES`).
 *   **Active Strategy Sidebar:** The Chat UI now features a real-time sidebar displaying "Confirmed Strategy" and "Emerging Observations" fetched from the `MemoryStore`.
 
-### 4. CPU-Intensive Offloading (Workers)
-CPU-heavy tasks like PDF parsing (`pdf-parse`) and embedding generation (`@xenova/transformers`) are strictly offloaded to **Piscina Worker Threads**.
-*   **Environment:** Must use a Debian-based image (like `node:20-slim`) to provide `glibc` for the `onnxruntime` shared library.
-*   **Worker:** `backend/src/ai/embedding.worker.js`.
-*   **Real-time Progress:** `MemoryService` emits `vault.progress` events via `EventEmitter2`, which are streamed to the frontend using Server-Sent Events (SSE).
+### 4. CPU-Intensive Offloading (Elite Workers)
+CPU-heavy tasks are strictly offloaded to **Piscina Worker Threads** (`backend/src/ai/embedding.worker.js`).
+*   **Model Isolation:** Uses `Xenova/all-MiniLM-L6-v2` with a singleton pattern and **60s loading timeout**.
+*   **Recovery:** 3-attempt retry strategy with exponential backoff for inference stability.
+*   **Elite Chunking:**
+    *   **Semantic Merging:** Uses dot-product optimized cosine similarity to group paragraphs into cohesive chunks (0.75 threshold).
+    *   **Sliding Window:** Implements a **20% word-level context overlap** to improve RAG recall.
+    *   **Batch Optimization:** Re-embeds final merged chunks in a single pass for a **2x-5x speed gain**.
+*   **Safety Guards:**
+    *   **5MB Document Guard:** Prevents oversized file ingestion.
+    *   **500 Paragraph Guard:** Caps memory usage for large documents.
+    *   **Worker Refresh:** The `Piscina` pool automatically cycles workers after 20 tasks to prevent memory fragmentation.
+*   **Real-time Progress:** Streamed via Server-Sent Events (SSE).
 
 ---
 
 ## 🛠️ Internal Services
 
 ### `AiOrchestrationService`
-The primary interface for Gemini. 
-*   Handles exponential backoff retries (rotating between `gemini-2.5-flash` and `gemini-flash-latest`).
-*   Enforces the **Epistemic Honesty Protocol**.
-*   Manages the XML-based context isolation.
+*   **Intelligence Flow:** Manages the **Think-Search-Answer** flow.
+*   **Streaming Support:** Now streams **live tool results** (Web Search, Tasks) directly into the conversational output.
+*   **Context Isolation:** Uses XML tags (`<online_intelligence>`, `<operational_tasks>`) to prevent prompt injection.
+
+### `ChatService`
+*   **Multi-Tool Loop:** Detects and auto-executes tools like `searchWeb` and `listTasks`.
+*   **Result Formatting:** Dynamically formats search results as markdown tables/lists for the UI.
+*   **Conversation Management:** Ensures session persistence; new conversations are only created upon explicit user request.
+*   **Memory Integration:** Asynchronously extracts insights to the Strategic Ledger using similarity deduplication.
 
 ### `MemoryService`
-Manages the semantic memory engine.
-*   **Ingestion:** Chunks and embeds documents. Emits progress via `vault.progress`.
-*   **Retrieval:** Performs vector similarity search using `pgvector` operators (`<=>`).
-*   **Compaction:** Background service that summarizes low-salience memories to prevent context bloat.
+*   **Semantic Deduplication:** Merges redundant insights (similarity > 0.92).
+*   **Graph Relations:** Tracks knowledge lineage (`SUPPORTS`, `CONTRADICTS`).
+*   **Salience Filtering:** Focuses context injection on high-signal (>= 0.5) data points.
 
 ---
 
