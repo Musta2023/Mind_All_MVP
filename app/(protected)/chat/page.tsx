@@ -55,8 +55,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const TaskCard = ({ task }: { task: any }) => {
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
-  const isCreate = task.tool === 'createTask';
-  const args = task.args || {};
+  const tool = task.tool || task.tool_call || 'unknown';
+  const isCreate = tool === 'createTask';
+  const isSearch = tool === 'searchWeb';
+  const isGoal = tool === 'createGoal' || tool === 'updateGoal';
+  const args = task.args || task.parameters || {};
   
   const handleAddTask = async () => {
     setLoading(true);
@@ -78,37 +81,62 @@ const TaskCard = ({ task }: { task: any }) => {
   };
 
   const getIcon = () => {
+    if (isSearch) return <Activity className="w-5 h-5 text-blue-500" />;
+    if (isGoal) return <TrendingUp className="w-5 h-5 text-emerald-500" />;
     if (args.title?.toLowerCase().includes('legal')) return <Gavel className="w-5 h-5 text-amber-500" />;
     if (args.title?.toLowerCase().includes('technical') || args.title?.toLowerCase().includes('mvp')) return <Rocket className="w-5 h-5 text-violet-500" />;
     return <FileText className="w-5 h-5 text-violet-500" />;
   };
 
+  const getLabel = () => {
+    if (isSearch) return 'Intelligence Search';
+    if (isGoal) return tool === 'createGoal' ? 'Goal Proposed' : 'Goal Update';
+    if (isCreate) return 'Action Proposed';
+    return 'Action Update';
+  };
+
+  const getTitle = () => {
+    if (isSearch) return args.query || 'Searching...';
+    return args.title || 'Untitled Action';
+  };
+
   return (
-    <Card className="my-4 border-l-4 border-l-violet-600 bg-violet-50/30 dark:bg-violet-900/10 shadow-sm overflow-hidden animate-in zoom-in-95 duration-300">
+    <Card className={cn(
+      "my-4 border-l-4 shadow-sm overflow-hidden animate-in zoom-in-95 duration-300",
+      isSearch ? "border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/10" :
+      isGoal ? "border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10" :
+      "border-l-violet-600 bg-violet-50/30 dark:bg-violet-900/10"
+    )}>
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-violet-500/10 rounded-lg">
+          <div className={cn(
+            "p-2 rounded-lg",
+            isSearch ? "bg-blue-500/10" : isGoal ? "bg-emerald-500/10" : "bg-violet-500/10"
+          )}>
             {getIcon()}
           </div>
           <div>
             <CardTitle className="text-sm font-bold text-foreground">
-              {isCreate ? 'Action Proposed' : 'Action Update'}
+              {getLabel()}
             </CardTitle>
             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-              Level 4 Operational Task
+              {isSearch ? 'Real-time Intelligence' : 'Level 4 Operational Task'}
             </p>
           </div>
         </div>
-        <Badge className={cn(
-          "text-[9px] font-bold px-1.5 py-0.5",
-          args.priority === 'high' || args.priority > 7 ? "bg-rose-500" : "bg-violet-500"
-        )}>
-          {args.priority || 'Medium'}
-        </Badge>
+        {(args.priority || args.deadline) && (
+          <Badge className={cn(
+            "text-[9px] font-bold px-1.5 py-0.5",
+            args.priority === 'high' || args.priority > 7 ? "bg-rose-500" : 
+            isGoal ? "bg-emerald-500" : "bg-violet-500"
+          )}>
+            {args.priority || 'Medium'}
+          </Badge>
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         <h4 className="text-sm font-semibold text-foreground leading-snug">
-          {args.title}
+          {getTitle()}
         </h4>
         {args.description && (
           <p className="text-xs text-muted-foreground leading-relaxed">
@@ -117,10 +145,10 @@ const TaskCard = ({ task }: { task: any }) => {
         )}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-3">
-            {args.dueDate && (
+            {(args.dueDate || args.deadline) && (
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
                 <Clock className="w-3 h-3" />
-                Due: {new Date(args.dueDate).toLocaleDateString()}
+                Due: {new Date(args.dueDate || args.deadline).toLocaleDateString()}
               </div>
             )}
             {args.goalId && (
@@ -301,14 +329,30 @@ export default function ChatPage() {
     if (!profile) {
       fetchDashboardData();
     }
+    
+    // Automatically load the latest conversation if none is selected
+    // but don't create one if none exist.
+    const initializeChat = async () => {
+      try {
+        const data = await ApiClient.get('/chat/conversations');
+        const latest = data.conversations?.[0];
+        if (latest && !conversationId) {
+          loadConversation(latest.id);
+        }
+      } catch (e) {}
+    };
+    
+    initializeChat();
   }, []);
 
   const loadConversations = async () => {
     try {
       const data = await ApiClient.get('/chat/conversations');
       setConversations(data.conversations || []);
+      return data.conversations;
     } catch (error) {
       console.error('Failed to load conversations:', error);
+      return [];
     }
   };
 
@@ -331,9 +375,12 @@ export default function ChatPage() {
 
   const startNewChat = () => {
     setMessages([]);
-    setConversationId(undefined);
+    setConversationId(undefined); // Clear ID so next message creates a NEW conversation
     setShowHistory(false);
-    if (textareaRef.current) textareaRef.current.focus();
+    if (textareaRef.current) {
+      textareaRef.current.value = '';
+      textareaRef.current.focus();
+    }
   };
 
   const deleteConversation = async (id: string, e: React.MouseEvent) => {

@@ -35,7 +35,7 @@ export class ChatController {
     try {
       let headersSent = false;
 
-      await this.chatService.sendMessage(
+      const result = await this.chatService.sendMessage(
         tenantId,
         user.userId,
         createMessageDto,
@@ -58,7 +58,7 @@ export class ChatController {
       }
 
       res.write(`event: complete\n`);
-      res.write(`data: [DONE]\n\n`);
+      res.write(`data: ${JSON.stringify({ conversationId: result.conversationId })}\n\n`);
       res.end();
     } catch (error) {
       console.error('[Chat] Error:', error);

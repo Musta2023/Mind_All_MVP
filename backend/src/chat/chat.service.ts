@@ -196,6 +196,26 @@ export class ChatService {
                 fullResponse += toolOutput;
                 onToken(toolOutput);
               }
+
+              if (toolName === 'searchWeb' && result && !result.error) {
+                let searchSummary = `\n\n### [INTELLIGENCE] SEARCH RESULTS: ${args.query}\n`;
+                if (result.answer) {
+                  searchSummary += `**Summary:** ${result.answer}\n\n`;
+                }
+                if (result.results && result.results.length > 0) {
+                  result.results.forEach((r: any, idx: number) => {
+                    searchSummary += `${idx + 1}. [${r.title}](${r.url})\n`;
+                    if (r.content) {
+                      searchSummary += `   *${r.content.substring(0, 160)}...*\n`;
+                    }
+                  });
+                } else if (!result.answer) {
+                  searchSummary += 'No specific results found for this query.';
+                }
+                
+                fullResponse += searchSummary;
+                onToken(searchSummary);
+              }
             } else {
               console.log(`[Chat] Proposing tool for user approval: ${toolName}`);
             }
