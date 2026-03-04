@@ -61,7 +61,7 @@ MindAll has evolved through four major strategic levels:
 *   **Framework:** NestJS (Node.js 20-slim)
 *   **ORM:** Prisma 7 (PostgreSQL + pgvector)
 *   **Task Queue:** BullMQ (Redis)
-*   **AI:** Google Gemini 1.5 Pro/Flash + @xenova/transformers (Local Embeddings)
+*   **AI:** Google Gemini Flash + @xenova/transformers (Local Embeddings)
 
 ---
 
@@ -103,5 +103,3 @@ docker compose up --build -d
 *   [Development Guide](./DEVELOPMENT_GUIDE.md) - Technical architecture and worker logic.
 *   [Deployment Guide](./DEPLOYMENT.md) - Docker and production configurations.
 *   [Implementation Summary](./IMPLEMENTATION_SUMMARY.md) - History of features and logic updates.
-
-
