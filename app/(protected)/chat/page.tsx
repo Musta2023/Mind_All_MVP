@@ -729,7 +729,7 @@ export default function ChatPage() {
                     <Bot className="w-10 h-10 text-primary" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-medium text-foreground dark:text-white tracking-tight">Welcome to the Strategy Room</h3>
+                    <h3 className="text-lg font-medium text-foreground dark:text-white tracking-tight">Welcome to the Strategy Room</h3>
                     <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed">
                       Ask me about your market, analyze your business model, or architect your technical stack.
                     </p>

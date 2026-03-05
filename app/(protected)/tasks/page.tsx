@@ -98,7 +98,7 @@ export default function TasksPage() {
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-medium tracking-tight text-foreground dark:text-white flex items-center gap-3">
+              <h1 className="text-xl font-medium tracking-tight text-foreground dark:text-white flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-xl">
                   <ListTodo className="w-8 h-8 text-primary" />
                 </div>
@@ -222,7 +222,7 @@ export default function TasksPage() {
                 Priority P{selectedTask?.priority}
               </Badge>
             </div>
-            <DialogTitle className="text-2xl font-medium leading-tight tracking-tight text-foreground dark:text-white">
+            <DialogTitle className="text-lg font-medium leading-tight tracking-tight text-foreground dark:text-white">
               {selectedTask?.title}
             </DialogTitle>
           </DialogHeader>

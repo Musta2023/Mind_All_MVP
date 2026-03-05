@@ -46,7 +46,7 @@ export default function OnboardingPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
+          <CardTitle className="text-xl font-medium tracking-tight">Complete Your Profile</CardTitle>
           <CardDescription>Tell us more about your startup</CardDescription>
         </CardHeader>
         <CardContent>

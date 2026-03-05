@@ -92,7 +92,7 @@ export default function UserProfilePage() {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-              <h1 className="text-3xl font-medium tracking-tight text-foreground dark:text-white">
+              <h1 className="text-xl font-medium tracking-tight text-foreground dark:text-white">
                 {profile?.name ? `${profile.name}'s Profile` : 'Strategic Profile'}
               </h1>
               <p className="text-muted-foreground mt-1">Manage your personal account details and identity.</p>

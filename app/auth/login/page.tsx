@@ -35,7 +35,7 @@ export default function LoginPage() {
       
       <Card glass className="w-full max-w-md relative z-10 border-primary/20 shadow-glow-soft">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-medium tracking-tight text-foreground dark:text-white text-center">
+          <CardTitle className="text-xl font-medium tracking-tight text-foreground dark:text-white text-center">
             Sign In
           </CardTitle>
           <CardDescription className="text-muted-foreground text-center text-base">

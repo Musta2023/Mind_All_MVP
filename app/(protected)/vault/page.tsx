@@ -121,7 +121,7 @@ export default function VaultPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-medium text-foreground tracking-tight flex items-center gap-3">
+              <h1 className="text-xl font-medium text-foreground tracking-tight flex items-center gap-3">
                 <Database className="w-8 h-8 text-primary" />
                 Knowledge Vault
                 {loading && documents.length > 0 && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-2" />}

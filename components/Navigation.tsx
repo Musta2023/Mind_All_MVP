@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import Image from 'next/image';
 import {
   Sheet,
   SheetContent,
@@ -78,7 +79,7 @@ export default function Navigation() {
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : (user?.email ? user.email.charAt(0).toUpperCase() : '?');
 
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
-    <div className="flex flex-col gap-2 px-3">
+    <div className="flex flex-col gap-1.5 px-3">
       {NAV_ITEMS.map((item) => {
         const isActive = pathname === item.href;
 
@@ -89,17 +90,17 @@ export default function Navigation() {
             variant="ghost"
             onClick={onClick}
             className={cn(
-              'w-full justify-start gap-4 h-12 px-4 rounded-xl transition-all duration-300 relative group overflow-hidden',
+              'w-full justify-start gap-3 h-10 px-3 rounded-lg transition-all duration-300 relative group overflow-hidden',
               isActive
-                ? 'bg-primary/10 text-primary font-bold shadow-glow-soft border border-primary/20'
-                : 'text-muted-foreground hover:bg-accent/20 hover:text-accent-foreground border border-transparent'
+                ? 'bg-primary/10 text-primary font-medium shadow-glow-soft border border-primary/20'
+                : 'text-muted-foreground hover:bg-accent/10 hover:text-accent-foreground border border-transparent'
             )}
           >
             <Link href={item.href}>
-              <item.icon className={cn("h-5 w-5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-primary drop-shadow-[0_0_8px_rgba(47,211,255,0.5)]" : "text-muted-foreground")} aria-hidden="true" />
-              <span className="relative z-10">{item.label}</span>
+              <item.icon className={cn("h-4.5 w-4.5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-primary drop-shadow-[0_0_8px_#2FD3FF]" : "text-muted-foreground")} aria-hidden="true" />
+              <span className="relative z-10 text-sm">{item.label}</span>
               {isActive && (
-                <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-full shadow-[0_0_10px_#2FD3FF]" />
+                <div className="absolute left-0 top-1/4 bottom-1/4 w-0.5 bg-primary rounded-full shadow-[0_0_10px_#2FD3FF]" />
               )}
             </Link>
           </Button>
@@ -111,20 +112,26 @@ export default function Navigation() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-72 border-r border-border/50 bg-card/80 backdrop-blur-xl h-screen sticky top-0 overflow-hidden shadow-xl shrink-0">
-        <div className="p-8">
+      <aside className="hidden md:flex flex-col w-64 border-r border-border/50 bg-card/80 backdrop-blur-xl h-screen sticky top-0 overflow-hidden shadow-xl shrink-0">
+        {/* Compact Logo Header */}
+        <div className="h-16 px-5 flex items-center border-b border-border/30 mb-4 shrink-0">
           <Link
             href="/dashboard"
-            className="flex items-center gap-4 text-2xl font-medium text-foreground hover:opacity-90 transition-all group"
+            className="flex items-center transition-all group"
           >
-            <div className="p-2 bg-primary rounded-xl shadow-glow-primary group-hover:scale-105 transition-transform duration-300">
-              <BrainCircuit className="w-7 h-7 text-primary-foreground" />
+            <div className="relative w-32 h-8 group-hover:scale-105 transition-transform duration-300">
+              <Image 
+                src="/MindAll logo.png" 
+                alt="MindAll Logo" 
+                fill
+                className="object-contain object-left drop-shadow-[0_0_8px_rgba(47,211,255,0.4)]"
+                priority
+              />
             </div>
-            <span className="tracking-tight text-foreground dark:text-white drop-shadow-sm">MindAll</span>
           </Link>
         </div>
 
-        <div className="flex-1 py-4 overflow-y-auto scrollbar-none">
+        <div className="flex-1 py-2 overflow-y-auto scrollbar-none">
           <NavLinks />
         </div>
 
@@ -183,20 +190,23 @@ export default function Navigation() {
       </aside>
 
       {/* Mobile Top Header */}
-      <header className="md:hidden flex items-center justify-between p-4 border-b border-border/50 bg-background/90 backdrop-blur-xl sticky top-0 z-40 w-full">
+      <header className="md:hidden flex items-center justify-between p-4 border-b border-border/50 bg-background/90 backdrop-blur-xl sticky top-0 z-40 w-full h-16">
         <Link
           href="/dashboard"
-          className="flex items-center gap-3 text-xl font-medium text-foreground"
+          className="flex items-center group"
         >
-          <div className="p-1.5 bg-primary rounded-lg shadow-glow-soft">
-            <BrainCircuit className="w-5 h-5 text-primary-foreground" />
+          <div className="relative w-32 h-8 group-hover:scale-105 transition-transform duration-300">
+            <Image 
+              src="/MindAll logo.png" 
+              alt="MindAll Logo" 
+              fill
+              className="object-contain object-left drop-shadow-[0_0_8px_rgba(47,211,255,0.4)]"
+            />
           </div>
-          <span className="text-foreground dark:text-white">MindAll</span>
         </Link>
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <span className="sr-only">Toggle theme</span>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary transition-colors">
@@ -205,22 +215,24 @@ export default function Navigation() {
             </SheetTrigger>
 
             <SheetContent side="left" className="w-[300px] p-0 flex flex-col bg-card border-r border-border/50">
-              <SheetHeader className="p-8 border-b border-border/30 text-left">
-                <div className="flex items-center gap-3">
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-4 text-2xl font-medium text-foreground"
-                  >
-                    <div className="p-2 bg-primary rounded-xl shadow-glow-primary">
-                      <BrainCircuit className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    <span className="text-foreground dark:text-white">MindAll</span>
-                  </Link>
-                </div>
+              <SheetHeader className="h-16 px-8 border-b border-border/30 text-left flex items-center flex-row">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center w-full"
+                >
+                  <div className="relative w-32 h-8">
+                    <Image 
+                      src="/MindAll logo.png" 
+                      alt="MindAll Logo" 
+                      fill
+                      className="object-contain object-left drop-shadow-[0_0_8px_rgba(47,211,255,0.4)]"
+                    />
+                  </div>
+                </Link>
               </SheetHeader>
 
-              <div className="flex-1 py-8 overflow-y-auto">
+              <div className="flex-1 py-6 overflow-y-auto">
                 <NavLinks onClick={() => setIsOpen(false)} />
               </div>
 

@@ -206,7 +206,7 @@ export default function RoadmapPage() {
                 </div>
                 <span className="text-sm font-semibold text-primary tracking-wide uppercase">Strategic Execution</span>
               </div>
-              <h1 className="text-3xl font-medium tracking-tight text-foreground dark:text-white">90-Day Roadmaps</h1>
+              <h1 className="text-xl font-medium tracking-tight text-foreground dark:text-white">90-Day Roadmaps</h1>
               <p className="text-muted-foreground mt-1 font-medium">AI-generated operational plans tailored to your current stage and goals.</p>
             </div>
 
