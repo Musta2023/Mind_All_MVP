@@ -369,10 +369,10 @@ export default function DashboardPage() {
                     <div className="p-1.5 bg-primary/20 rounded-lg">
                       <Sparkles className="w-4 h-4 text-primary" />
                     </div>
-                    <h2 className="text-lg font-medium tracking-tight">The Executive Memo</h2>
+                    <h2 className="text-lg font-medium tracking-tight">The Daily Executive Memo Breifing</h2>
                   </div>
                   <p className="text-muted-foreground text-sm max-w-2xl opacity-70 leading-snug">
-                    AI-generated summary of your business trajectory, priority shifts, and emerging risks.
+                    AI-generated summary of your business trajectory, priority shifts, and emerging risks in 24h period.
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -660,7 +660,7 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-4 pt-2 pb-12">
             {[
               { href: '/chat', icon: Bot, label: 'Strategy Room', desc: 'AI Co-Founder sync.', color: 'primary' },
-              { href: '/vault', icon: Activity, label: 'Knowledge Vault', desc: 'Secure data ingestion.', color: 'soft-accent' },
+              { href: '/vault', icon: Activity, label: 'Knowledge Vault', desc: 'Secure data ingestion.', color: 'primary' },
               { href: '/tasks', icon: ListTodo, label: 'Action Board', desc: 'Tactical deployment.', color: 'primary' },
               { href: '/company', icon: Building2, label: 'Identity DNA', desc: 'Refine vision.', color: 'primary' }
             ].map((action, i) => (

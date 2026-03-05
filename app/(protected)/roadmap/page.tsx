@@ -284,10 +284,7 @@ export default function RoadmapPage() {
             <div className="space-y-10 animate-in fade-in duration-700">
               {roadmaps.map((roadmap, index) => (
                 <div key={roadmap.id} className="relative">
-                  {/* Timeline connecting line for multiple roadmaps */}
-                  {index !== roadmaps.length - 1 && (
-                    <div className="absolute left-8 top-24 -bottom-10 w-px bg-border z-0 hidden md:block"></div>
-                  )}
+                  {/* Timeline connecting line removed */}
 
                   <Card glass className="relative z-10 overflow-hidden shadow-sm border-border bg-card transition-all hover:shadow-glow-soft">
                     {/* Header */}
@@ -354,15 +351,14 @@ export default function RoadmapPage() {
 
                           <div className="space-y-6">
                             {roadmap.initiatives.map((init, idx) => (
-                              <div key={idx} className="relative pl-6 md:pl-0">
-                                {/* Mobile timeline line */}
-                                <div className="absolute left-2.75 top-8 -bottom-6 w-px bg-border md:hidden"></div>
+                              <div key={idx} className="relative md:pl-0">
+                                {/* Mobile timeline line removed */}
 
                                 <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                                   {/* Desktop Timeline Info */}
                                   <div className="md:w-1/4 shrink-0 pt-1 relative">
                                     <div className="flex items-center gap-2 mb-1">
-                                      <div className="absolute -left-6 md:hidden w-3 h-3 rounded-full border-2 border-primary bg-background z-10 shadow-[0_0_8px_#2FD3FF]" />
+                                      {/* Circle removed */}
                                       <Calendar className="w-4 h-4 text-muted-foreground hidden md:block" />
                                       <span className="text-sm font-semibold text-primary">{init.deadline}</span>
                                     </div>
