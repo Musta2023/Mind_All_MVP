@@ -98,16 +98,16 @@ export default function TasksPage() {
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                <div className="p-2 bg-violet-600/10 rounded-xl">
-                  <ListTodo className="w-8 h-8 text-violet-600" />
+              <h1 className="text-3xl font-medium tracking-tight text-foreground dark:text-white flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-xl">
+                  <ListTodo className="w-8 h-8 text-primary" />
                 </div>
                 Execution Board
               </h1>
               <p className="text-muted-foreground mt-1 font-medium">Manage and track your AI-generated tactical operations.</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" className="gap-2 border-border" onClick={() => router.push('/chat')}>
+              <Button variant="outline" className="gap-2 border-primary/20 text-primary hover:bg-primary/5 font-medium" onClick={() => router.push('/chat')}>
                 <Plus className="w-4 h-4" />
                 Add Strategic Task
               </Button>
@@ -121,20 +121,20 @@ export default function TasksPage() {
                   <div className="flex items-center gap-2">
                     <div className={cn(
                       "w-2.5 h-2.5 rounded-full ring-4 ring-offset-2 ring-transparent",
-                      status === 'TODO' ? "bg-slate-400 ring-slate-400/10" : status === 'IN_PROGRESS' ? "bg-violet-500 ring-violet-500/10" : "bg-emerald-500 ring-emerald-500/10"
+                      status === 'TODO' ? "bg-slate-400 ring-slate-400/10" : status === 'IN_PROGRESS' ? "bg-primary ring-primary/10 shadow-[0_0_8px_#2FD3FF]" : "bg-success ring-success/10"
                     )} />
-                    <span className="text-xs font-bold uppercase tracking-widest text-foreground/70">
+                    <span className="text-xs font-medium uppercase tracking-widest text-foreground/70">
                       {status.replace('_', ' ')}
                     </span>
                   </div>
-                  <Badge variant="secondary" className="bg-muted text-[10px] h-5 px-2 font-bold shadow-sm">
+                  <Badge variant="secondary" className="bg-muted text-[10px] h-5 px-2 font-medium shadow-sm">
                     {tasks.filter(t => t.status === status).length}
                   </Badge>
                 </div>
 
                 <div className="flex-1 space-y-3">
                   {loading ? (
-                    [1, 2].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)
+                    [1, 2].map(i => <Skeleton key={i} className="h-32 rounded-xl bg-muted/50" />)
                   ) : tasks.filter(t => t.status === status).length === 0 ? (
                     <div className="h-32 border border-dashed border-border/50 rounded-xl flex flex-col items-center justify-center text-muted-foreground/30 text-xs font-medium italic gap-2">
                       <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
@@ -147,14 +147,15 @@ export default function TasksPage() {
                       <Card 
                         key={task.id} 
                         onClick={() => setSelectedTask(task)}
-                        className="border-border bg-card shadow-sm hover:shadow-lg transition-all group cursor-pointer hover:border-violet-500/40 relative"
+                        glass
+                        className="border-border bg-card shadow-sm hover:shadow-glow-soft transition-all group cursor-pointer hover:border-primary/40 relative"
                       >
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-[14px] font-bold text-foreground leading-tight line-clamp-2">{task.title}</h4>
+                            <h4 className="text-[14px] font-medium text-foreground dark:text-white leading-tight line-clamp-2">{task.title}</h4>
                             <Badge className={cn(
-                              "text-[8px] font-bold px-1.5 py-0 h-4 shrink-0",
-                              task.priority > 7 ? "bg-rose-500" : task.priority > 4 ? "bg-amber-500" : "bg-violet-500"
+                              "text-[8px] font-medium px-1.5 py-0 h-4 shrink-0",
+                              task.priority > 7 ? "bg-destructive" : task.priority > 4 ? "bg-warning text-warning-foreground" : "bg-primary text-primary-foreground"
                             )}>
                               P{task.priority}
                             </Badge>
@@ -163,7 +164,7 @@ export default function TasksPage() {
                           <div className="flex items-center justify-between pt-1">
                             <div className="flex items-center gap-1.5">
                               {task.goal && (
-                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-violet-500/5 border border-violet-500/10 rounded text-[9px] text-violet-600 font-bold uppercase tracking-tighter">
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/5 border border-primary/10 rounded text-[9px] text-primary font-medium uppercase tracking-tighter">
                                   <Rocket className="w-2.5 h-2.5" />
                                   {task.goal.title.substring(0, 12)}...
                                 </div>
@@ -174,19 +175,19 @@ export default function TasksPage() {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  className="h-7 w-7 text-emerald-500 hover:bg-emerald-50 rounded-lg"
+                                  className="h-7 w-7 text-success hover:bg-success/10 rounded-lg"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleTaskStatusUpdate(task.id, status === 'TODO' ? 'IN_PROGRESS' : 'DONE');
                                   }}
                                 >
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                  <CheckCircle2 className="w-4 h-4" />
                                 </Button>
                               )}
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-7 w-7 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 rounded-lg"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteTask(task.id);
@@ -211,28 +212,28 @@ export default function TasksPage() {
         <DialogContent className="sm:max-w-[550px] border-border bg-card shadow-2xl">
           <DialogHeader>
             <div className="flex items-center gap-2 mb-2">
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground border-border">
+              <Badge variant="outline" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground border-border">
                 {selectedTask?.status.replace('_', ' ')}
               </Badge>
               <Badge className={cn(
-                "text-[10px] font-bold shadow-sm",
-                selectedTask && selectedTask.priority > 7 ? "bg-rose-500" : selectedTask && selectedTask.priority > 4 ? "bg-amber-500" : "bg-violet-500"
+                "text-[10px] font-medium shadow-sm",
+                selectedTask && selectedTask.priority > 7 ? "bg-destructive" : selectedTask && selectedTask.priority > 4 ? "bg-warning text-warning-foreground" : "bg-primary text-primary-foreground"
               )}>
                 Priority P{selectedTask?.priority}
               </Badge>
             </div>
-            <DialogTitle className="text-2xl font-bold leading-tight tracking-tight text-foreground">
+            <DialogTitle className="text-2xl font-medium leading-tight tracking-tight text-foreground dark:text-white">
               {selectedTask?.title}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 pt-4">
             {selectedTask?.description && (
               <div className="space-y-2">
-                <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                  <Bot className="w-3 h-3 text-violet-500" />
+                <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                  <Bot className="w-3 h-3 text-primary" />
                   Strategic Context
                 </h4>
-                <div className="p-5 bg-muted/30 rounded-2xl border border-border text-sm leading-relaxed text-foreground whitespace-pre-wrap font-medium">
+                <div className="p-5 bg-muted/30 rounded-2xl border border-border text-sm leading-relaxed text-foreground dark:text-white whitespace-pre-wrap font-medium">
                   {selectedTask.description}
                 </div>
               </div>
@@ -240,17 +241,17 @@ export default function TasksPage() {
             
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Strategic Goal</p>
-                <div className="flex items-center gap-2 text-sm font-bold text-foreground">
-                  <div className="p-1.5 bg-violet-500/10 rounded-lg">
-                    <Rocket className="w-4 h-4 text-violet-500" />
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Strategic Goal</p>
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground dark:text-white">
+                  <div className="p-1.5 bg-primary/10 rounded-lg">
+                    <Rocket className="w-4 h-4 text-primary" />
                   </div>
                   {selectedTask?.goal?.title || 'General Strategy'}
                 </div>
               </div>
               <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Date</p>
-                <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Target Date</p>
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <div className="p-1.5 bg-muted rounded-lg">
                     <Clock className="w-4 h-4" />
                   </div>
@@ -262,17 +263,17 @@ export default function TasksPage() {
             <div className="pt-6 flex justify-between items-center border-t border-border/50">
               <Button 
                 variant="ghost" 
-                className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 gap-2 font-bold text-xs"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-2 font-medium text-xs"
                 onClick={() => handleDeleteTask(selectedTask!.id)}
               >
                 <Trash2 className="w-4 h-4" />
                 Purge Operation
               </Button>
               <div className="flex gap-3">
-                <Button variant="outline" className="font-bold text-xs" onClick={() => setSelectedTask(null)}>Close</Button>
+                <Button variant="outline" className="font-medium text-xs" onClick={() => setSelectedTask(null)}>Close</Button>
                 {selectedTask?.status !== 'DONE' && (
                   <Button 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 font-bold text-xs"
+                    className="bg-success text-success-foreground hover:bg-success/90 shadow-lg font-medium text-xs"
                     onClick={() => {
                       if (selectedTask) {
                         handleTaskStatusUpdate(selectedTask.id, selectedTask.status === 'TODO' ? 'IN_PROGRESS' : 'DONE');

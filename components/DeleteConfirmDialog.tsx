@@ -39,18 +39,18 @@ export function DeleteConfirmDialog({
           <div className="flex items-center gap-3 mb-2">
             <div className={cn(
               "p-2 rounded-full",
-              isDestructive ? "bg-rose-500/10 text-rose-500" : "bg-violet-500/10 text-violet-500"
+              isDestructive ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"
             )}>
               <AlertTriangle className="w-5 h-5" />
             </div>
-            <AlertDialogTitle className="text-xl font-bold">{title}</AlertDialogTitle>
+            <AlertDialogTitle className="text-xl font-medium text-foreground dark:text-white">{title}</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="text-sm leading-relaxed text-muted-foreground pt-2">
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="pt-6 gap-3">
-          <AlertDialogCancel className="border-border hover:bg-muted font-medium">
+          <AlertDialogCancel className="border-border hover:bg-muted font-medium bg-card text-foreground dark:text-white">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
@@ -59,10 +59,10 @@ export function DeleteConfirmDialog({
               onConfirm();
             }}
             className={cn(
-              "font-bold shadow-sm transition-all",
+              "font-medium shadow-sm transition-all",
               isDestructive 
-                ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-700" 
-                : "bg-violet-600 hover:bg-violet-700 text-white"
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
             )}
           >
             <Trash2 className="w-4 h-4 mr-2" />

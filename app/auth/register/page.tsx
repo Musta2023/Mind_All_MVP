@@ -44,25 +44,30 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-900 to-slate-800 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
-          <CardDescription>Join MindAll to get started</CardDescription>
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 relative overflow-hidden font-sans">
+      {/* Dynamic Background Glows */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-accent/10 rounded-full blur-[120px] animate-pulse delay-700" />
+
+      <Card glass className="w-full max-w-md relative z-10 border-primary/20 shadow-glow-soft">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-3xl font-medium tracking-tight text-foreground dark:text-white">Create Account</CardTitle>
+          <CardDescription className="text-muted-foreground text-base">Join the future of business intelligence</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+              <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive text-center">
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name" className="text-foreground dark:text-white">Full Name</Label>
               <Input
                 id="name"
                 placeholder="John Doe"
+                className="bg-background/50 border-border focus:neon-border"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
@@ -72,11 +77,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-foreground dark:text-white">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="founder@mindall.ai"
+                className="bg-background/50 border-border focus:neon-border"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -86,11 +92,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" title="Minimum 8 characters" className="text-foreground dark:text-white">Password</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
+                className="bg-background/50 border-border focus:neon-border"
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
@@ -101,10 +108,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="startupName">Startup Name</Label>
+              <Label htmlFor="startupName" className="text-foreground dark:text-white">Startup Name</Label>
               <Input
                 id="startupName"
-                placeholder="Your startup name"
+                placeholder="Your company name"
+                className="bg-background/50 border-border focus:neon-border"
                 value={formData.startupName}
                 onChange={(e) =>
                   setFormData({ ...formData, startupName: e.target.value })
@@ -114,14 +122,14 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="stage">Startup Stage</Label>
+              <Label htmlFor="stage" className="text-foreground dark:text-white">Startup Stage</Label>
               <Select value={formData.stage} onValueChange={(value) =>
                 setFormData({ ...formData, stage: value })
               }>
-                <SelectTrigger id="stage">
+                <SelectTrigger id="stage" className="bg-background/50 border-border focus:ring-primary/20">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card border-border">
                   <SelectItem value="idea">Idea</SelectItem>
                   <SelectItem value="pre-seed">Pre-Seed</SelectItem>
                   <SelectItem value="seed">Seed</SelectItem>
@@ -131,14 +139,14 @@ export default function RegisterPage() {
               </Select>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Create Account'}
+            <Button type="submit" className="w-full text-base font-medium py-6 shadow-glow-primary transition-all duration-300" disabled={loading}>
+              {loading ? 'Initializing Neural Link...' : 'Create Strategic Account'}
             </Button>
 
-            <div className="text-center text-sm">
+            <div className="text-center text-sm text-muted-foreground pt-2">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-violet-600 hover:underline">
-                Sign in
+              <Link href="/auth/login" className="text-primary font-medium hover:text-soft-accent hover:underline transition-all">
+                Sign In
               </Link>
             </div>
           </form>

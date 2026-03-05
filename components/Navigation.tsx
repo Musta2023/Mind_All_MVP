@@ -18,7 +18,6 @@ import {
   Database, 
   ListTodo, 
   Building2, 
-  User as UserIcon, 
   LogOut,
   BrainCircuit,
   Settings,
@@ -79,7 +78,7 @@ export default function Navigation() {
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : (user?.email ? user.email.charAt(0).toUpperCase() : '?');
 
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
-    <div className="flex flex-col gap-1 px-2">
+    <div className="flex flex-col gap-2 px-3">
       {NAV_ITEMS.map((item) => {
         const isActive = pathname === item.href;
 
@@ -90,15 +89,18 @@ export default function Navigation() {
             variant="ghost"
             onClick={onClick}
             className={cn(
-              'w-full justify-start gap-3 h-11 px-4 transition-all duration-200',
+              'w-full justify-start gap-4 h-12 px-4 rounded-xl transition-all duration-300 relative group overflow-hidden',
               isActive
-                ? 'bg-violet-600/10 text-violet-600 font-bold hover:bg-violet-600/15'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                ? 'bg-primary/10 text-primary font-bold shadow-glow-soft border border-primary/20'
+                : 'text-muted-foreground hover:bg-accent/20 hover:text-accent-foreground border border-transparent'
             )}
           >
             <Link href={item.href}>
-              <item.icon className={cn("h-5 w-5", isActive ? "text-violet-600" : "text-muted-foreground")} aria-hidden="true" />
-              {item.label}
+              <item.icon className={cn("h-5 w-5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-primary drop-shadow-[0_0_8px_rgba(47,211,255,0.5)]" : "text-muted-foreground")} aria-hidden="true" />
+              <span className="relative z-10">{item.label}</span>
+              {isActive && (
+                <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-full shadow-[0_0_10px_#2FD3FF]" />
+              )}
             </Link>
           </Button>
         );
@@ -109,71 +111,71 @@ export default function Navigation() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-card h-screen sticky top-0 overflow-hidden shadow-sm shrink-0">
-        <div className="p-6">
+      <aside className="hidden md:flex flex-col w-72 border-r border-border/50 bg-card/80 backdrop-blur-xl h-screen sticky top-0 overflow-hidden shadow-xl shrink-0">
+        <div className="p-8">
           <Link
             href="/dashboard"
-            className="flex items-center gap-3 text-2xl font-black text-foreground hover:opacity-80 transition-opacity"
+            className="flex items-center gap-4 text-2xl font-medium text-foreground hover:opacity-90 transition-all group"
           >
-            <div className="p-1.5 bg-violet-600 rounded-lg">
-              <BrainCircuit className="w-6 h-6 text-white" />
+            <div className="p-2 bg-primary rounded-xl shadow-glow-primary group-hover:scale-105 transition-transform duration-300">
+              <BrainCircuit className="w-7 h-7 text-primary-foreground" />
             </div>
-            <span>MindAll</span>
+            <span className="tracking-tight text-foreground dark:text-white drop-shadow-sm">MindAll</span>
           </Link>
         </div>
 
-        <div className="flex-1 py-4">
+        <div className="flex-1 py-4 overflow-y-auto scrollbar-none">
           <NavLinks />
         </div>
 
-        <div className="p-4 border-t border-border space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Appearance</span>
+        <div className="p-4 border-t border-border/30 space-y-4 bg-background/20 mt-auto shrink-0">
+          <div className="flex items-center justify-between px-3">
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest opacity-60">Mode</span>
             <ThemeToggle />
           </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="w-full justify-start gap-3 h-14 p-2 rounded-xl transition-all hover:bg-accent/50 group">
-                <Avatar className="h-9 w-9 border border-border group-hover:border-primary/20 transition-all">
-                  <AvatarFallback className="bg-primary/5 text-primary text-xs font-bold">
+              <Button variant="ghost" className="w-full justify-start gap-3 h-14 p-2 rounded-xl transition-all hover:bg-primary/5 border border-transparent hover:border-primary/20 group">
+                <Avatar className="h-9 w-9 border border-border group-hover:border-primary/40 transition-all shadow-sm">
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                     {userInitial}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col items-start min-w-0">
-                  <p className="text-sm font-bold leading-none truncate w-full">
+                  <p className="text-xs font-medium leading-none truncate w-full text-foreground dark:text-white">
                     {user?.name || user?.email?.split('@')[0] || 'Founder'}
                   </p>
-                  <p className="text-[10px] leading-none text-muted-foreground mt-1 truncate w-full">
+                  <p className="text-[9px] leading-none text-muted-foreground mt-1 truncate w-full opacity-70">
                     {user?.email}
                   </p>
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mb-2" align="start" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-bold leading-none">{user?.name || user?.email?.split('@')[0] || 'Founder'}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
+            <DropdownMenuContent className="w-64 mb-4 bg-card/95 backdrop-blur-md border-border/50" align="start" sideOffset={10} forceMount>
+              <DropdownMenuLabel className="font-normal p-4">
+                <div className="flex flex-col space-y-2">
+                  <p className="text-base font-medium leading-none text-foreground dark:text-white">{user?.name || user?.email?.split('@')[0] || 'Founder'}</p>
+                  <p className="text-xs leading-none text-muted-foreground opacity-70">
                     {user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="cursor-pointer gap-2">
-                <Link href="/profile">
+              <DropdownMenuSeparator className="bg-border/30" />
+              <DropdownMenuItem asChild className="cursor-pointer gap-3 p-3 focus:bg-primary/10 focus:text-primary transition-colors">
+                <Link href="/profile" className="flex items-center w-full">
                   <Settings className="h-4 w-4" />
-                  <span>Settings</span>
+                  <span className="font-medium">Settings</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-border/30" />
               <DropdownMenuItem 
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="text-destructive focus:text-destructive cursor-pointer gap-2"
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer gap-3 p-3 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
-                <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+                <span className="font-medium">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -181,67 +183,68 @@ export default function Navigation() {
       </aside>
 
       {/* Mobile Top Header */}
-      <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-40 w-full">
+      <header className="md:hidden flex items-center justify-between p-4 border-b border-border/50 bg-background/90 backdrop-blur-xl sticky top-0 z-40 w-full">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 text-xl font-black text-foreground"
+          className="flex items-center gap-3 text-xl font-medium text-foreground"
         >
-          <div className="p-1 bg-violet-600 rounded-md">
-            <BrainCircuit className="w-4 h-4 text-white" />
+          <div className="p-1.5 bg-primary rounded-lg shadow-glow-soft">
+            <BrainCircuit className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span>MindAll</span>
+          <span className="text-foreground dark:text-white">MindAll</span>
         </Link>
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <span className="sr-only">Toggle theme</span>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary transition-colors">
                 <Menu className="h-6 w-6" aria-hidden="true" />
               </Button>
             </SheetTrigger>
 
-            <SheetContent side="left" className="w-[300px] p-0 flex flex-col bg-card border-r border-border">
-              <SheetHeader className="p-6 border-b border-border text-left">
+            <SheetContent side="left" className="w-[300px] p-0 flex flex-col bg-card border-r border-border/50">
+              <SheetHeader className="p-8 border-b border-border/30 text-left">
                 <div className="flex items-center gap-3">
                   <Link
                     href="/dashboard"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 text-2xl font-black text-foreground"
+                    className="flex items-center gap-4 text-2xl font-medium text-foreground"
                   >
-                    <div className="p-1.5 bg-violet-600 rounded-lg">
-                      <BrainCircuit className="w-5 h-5 text-white" />
+                    <div className="p-2 bg-primary rounded-xl shadow-glow-primary">
+                      <BrainCircuit className="w-6 h-6 text-primary-foreground" />
                     </div>
-                    <span>MindAll</span>
+                    <span className="text-foreground dark:text-white">MindAll</span>
                   </Link>
                 </div>
               </SheetHeader>
 
-              <div className="flex-1 py-6 overflow-y-auto">
+              <div className="flex-1 py-8 overflow-y-auto">
                 <NavLinks onClick={() => setIsOpen(false)} />
               </div>
 
-              <div className="p-6 border-t border-border">
-                <div className="flex items-center gap-3 mb-6">
-                  <Avatar className="h-10 w-10 border border-border">
-                    <AvatarFallback className="bg-primary/5 text-primary text-sm font-bold">
+              <div className="p-8 border-t border-border/30 bg-background/20">
+                <div className="flex items-center gap-4 mb-8">
+                  <Avatar className="h-12 w-12 border border-border/50">
+                    <AvatarFallback className="bg-primary/10 text-primary text-base font-medium">
                       {userInitial}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col min-w-0">
-                    <p className="text-sm font-bold leading-none truncate">
+                    <p className="text-base font-medium leading-none truncate text-foreground dark:text-white">
                       {user?.name || user?.email?.split('@')[0] || 'Founder'}
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-1 truncate">{user?.email}</p>
+                    <p className="text-xs text-muted-foreground mt-1.5 truncate opacity-70">{user?.email}</p>
                   </div>
                 </div>
 
-                <div className="grid gap-2">
+                <div className="grid gap-3">
                   <Button
                     asChild
                     variant="ghost"
                     onClick={() => setIsOpen(false)}
-                    className="w-full justify-start gap-3 h-11 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    className="w-full justify-start gap-4 h-12 rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all"
                   >
                     <Link href="/profile">
                       <Settings className="h-5 w-5" />
@@ -252,7 +255,7 @@ export default function Navigation() {
                     onClick={handleLogout}
                     variant="ghost"
                     disabled={isLoggingOut}
-                    className="w-full justify-start gap-3 h-11 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    className="w-full justify-start gap-4 h-12 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive transition-all"
                   >
                     <LogOut className="h-5 w-5" aria-hidden="true" />
                     {isLoggingOut ? 'Logging out...' : 'Logout'}

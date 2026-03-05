@@ -79,11 +79,11 @@ const TaskCard = ({ task }: { task: any }) => {
   };
 
   const getIcon = () => {
-    if (isSearch) return <Activity className="w-5 h-5 text-blue-500" />;
-    if (isGoal) return <TrendingUp className="w-5 h-5 text-emerald-500" />;
-    if (args.title?.toLowerCase().includes('legal')) return <Gavel className="w-5 h-5 text-amber-500" />;
-    if (args.title?.toLowerCase().includes('technical') || args.title?.toLowerCase().includes('mvp')) return <Rocket className="w-5 h-5 text-violet-500" />;
-    return <FileText className="w-5 h-5 text-violet-500" />;
+    if (isSearch) return <Activity className="w-5 h-5 text-accent" />;
+    if (isGoal) return <TrendingUp className="w-5 h-5 text-success" />;
+    if (args.title?.toLowerCase().includes('legal')) return <Gavel className="w-5 h-5 text-warning" />;
+    if (args.title?.toLowerCase().includes('technical') || args.title?.toLowerCase().includes('mvp')) return <Rocket className="w-5 h-5 text-primary" />;
+    return <FileText className="w-5 h-5 text-primary" />;
   };
 
   const getLabel = () => {
@@ -101,32 +101,32 @@ const TaskCard = ({ task }: { task: any }) => {
   return (
     <Card className={cn(
       "my-4 border-l-4 shadow-sm overflow-hidden animate-in zoom-in-95 duration-300",
-      isSearch ? "border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/10" :
-      isGoal ? "border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10" :
-      "border-l-violet-600 bg-violet-50/30 dark:bg-violet-900/10"
+      isSearch ? "border-l-accent bg-accent/5" :
+      isGoal ? "border-l-success bg-success/5" :
+      "border-l-primary bg-primary/5"
     )}>
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={cn(
             "p-2 rounded-lg",
-            isSearch ? "bg-blue-500/10" : isGoal ? "bg-emerald-500/10" : "bg-violet-500/10"
+            isSearch ? "bg-accent/10" : isGoal ? "bg-success/10" : "bg-primary/10"
           )}>
             {getIcon()}
           </div>
           <div>
-            <CardTitle className="text-sm font-bold text-foreground">
+            <CardTitle className="text-sm font-medium text-foreground">
               {getLabel()}
             </CardTitle>
-            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+            <p className="text-[10px] text-muted-foreground uppercase font-medium tracking-widest">
               {isSearch ? 'Real-time Intelligence' : 'Level 4 Operational Task'}
             </p>
           </div>
         </div>
         {(args.priority || args.deadline) && (
           <Badge className={cn(
-            "text-[9px] font-bold px-1.5 py-0.5",
-            args.priority === 'high' || args.priority > 7 ? "bg-rose-500" : 
-            isGoal ? "bg-emerald-500" : "bg-violet-500"
+            "text-[9px] font-medium px-1.5 py-0.5",
+            args.priority === 'high' || args.priority > 7 ? "bg-destructive" : 
+            isGoal ? "bg-success" : "bg-primary"
           )}>
             {args.priority || 'Medium'}
           </Badge>
@@ -150,7 +150,7 @@ const TaskCard = ({ task }: { task: any }) => {
               </div>
             )}
             {args.goalId && (
-              <div className="flex items-center gap-1 text-[10px] text-violet-600 font-bold bg-violet-500/5 px-1.5 py-0.5 rounded border border-violet-500/10 uppercase tracking-tighter">
+              <div className="flex items-center gap-1 text-[10px] text-primary font-medium bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10 uppercase tracking-tighter">
                 <Rocket className="w-3 h-3" />
                 {args.goalId}
               </div>
@@ -164,11 +164,11 @@ const TaskCard = ({ task }: { task: any }) => {
               disabled={loading || added}
               onClick={handleAddTask}
               className={cn(
-                "h-7 text-[10px] font-bold px-3 gap-1.5 transition-all",
-                added ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/10" : "bg-violet-600 hover:bg-violet-700 text-white shadow-sm"
+                "h-7 text-[10px] font-medium px-3 gap-1.5 transition-all",
+                added ? "bg-success/10 text-success border-success/20 hover:bg-success/10" : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
               )}
             >
-              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : added ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Plus className="w-3 h-3" />}
+              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : added ? <CheckCircle2 className="w-3 h-3 text-success" /> : <Plus className="w-3 h-3" />}
               {added ? 'Added to Board' : 'Add to Board'}
             </Button>
           )}
@@ -202,9 +202,9 @@ const EpistemicHonestyCard = ({ content }: { content: string }) => {
   const getScoreColor = (score: string) => {
     const val = parseFloat(score);
     if (isNaN(val)) return 'text-muted-foreground';
-    if (val >= 0.8) return 'text-emerald-500';
-    if (val >= 0.5) return 'text-amber-500';
-    return 'text-rose-500';
+    if (val >= 0.8) return 'text-success';
+    if (val >= 0.5) return 'text-warning';
+    return 'text-destructive';
   };
 
   // Flexible key matching
@@ -214,11 +214,11 @@ const EpistemicHonestyCard = ({ content }: { content: string }) => {
   const score = data['Confidence Score'] || data['Confidence'];
 
   return (
-    <Card className="my-6 border-l-4 border-l-amber-500 bg-amber-500/5 shadow-md overflow-hidden animate-in fade-in zoom-in-95 duration-500">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between bg-amber-500/10">
+    <Card className="my-6 border-l-4 border-l-warning bg-warning/5 shadow-md overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between bg-warning/10">
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-amber-600" />
-          <CardTitle className="text-xs font-black uppercase tracking-widest text-amber-700">
+          <Shield className="w-4 h-4 text-warning" />
+          <CardTitle className="text-xs font-black uppercase tracking-widest text-warning-foreground dark:text-warning">
             Epistemic Honesty Protocol
           </CardTitle>
         </div>
@@ -231,23 +231,23 @@ const EpistemicHonestyCard = ({ content }: { content: string }) => {
       <CardContent className="pt-4 space-y-4">
         {conclusion && (
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Conclusion</p>
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Conclusion</p>
             <p className="text-sm font-semibold text-foreground leading-snug">{conclusion}</p>
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {reasoning && (
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Reasoning</p>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Reasoning</p>
               <p className="text-xs text-muted-foreground leading-relaxed">{reasoning}</p>
             </div>
           )}
           {risk && (
-            <div className="space-y-1 p-2 bg-rose-500/5 border border-rose-500/10 rounded-lg">
-              <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1">
+            <div className="space-y-1 p-2 bg-destructive/5 border border-destructive/10 rounded-lg">
+              <p className="text-[10px] font-medium text-destructive uppercase tracking-wider flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" /> Risk Factor
               </p>
-              <p className="text-xs text-rose-700 leading-relaxed font-medium">{risk}</p>
+              <p className="text-xs text-destructive leading-relaxed font-medium">{risk}</p>
             </div>
           )}
         </div>
@@ -258,10 +258,10 @@ const EpistemicHonestyCard = ({ content }: { content: string }) => {
 
 const StatusBadge = ({ status }: { status: string }) => {
   const s = status.toUpperCase();
-  if (s.includes('DONE')) return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[9px] px-1.5 py-0">DONE</Badge>;
-  if (s.includes('PROGRESS')) return <Badge className="bg-violet-500/10 text-violet-600 border-violet-500/20 text-[9px] px-1.5 py-0">IN PROGRESS</Badge>;
-  if (s.includes('TODO')) return <Badge className="bg-slate-500/10 text-slate-600 border-slate-500/20 text-[9px] px-1.5 py-0">TODO</Badge>;
-  if (s.includes('BLOCK')) return <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[9px] px-1.5 py-0">BLOCKED</Badge>;
+  if (s.includes('DONE')) return <Badge className="bg-success/10 text-success border-success/20 text-[9px] px-1.5 py-0">DONE</Badge>;
+  if (s.includes('PROGRESS')) return <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] px-1.5 py-0">IN PROGRESS</Badge>;
+  if (s.includes('TODO')) return <Badge className="bg-muted text-muted-foreground border-border text-[9px] px-1.5 py-0">TODO</Badge>;
+  if (s.includes('BLOCK')) return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px] px-1.5 py-0">BLOCKED</Badge>;
   return <Badge variant="outline" className="text-[9px] px-1.5 py-0">{status}</Badge>;
 };
 
@@ -274,18 +274,18 @@ const extractText = (node: any): string => {
 
 const TaskCardItem = ({ status, content, priority }: { status: string, content: string, priority?: string }) => {
   return (
-    <div className="flex items-start gap-3 p-3 bg-card border border-border/50 rounded-xl shadow-sm hover:shadow-md hover:border-violet-500/30 transition-all group mb-2 last:mb-0">
+    <div className="flex items-start gap-3 p-3 bg-card border border-border/50 rounded-xl shadow-sm hover:shadow-md hover:border-primary/30 transition-all group mb-2 last:mb-0">
       <div className="mt-0.5 shrink-0">
         <StatusBadge status={status} />
       </div>
       <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-        <div className="text-sm font-semibold text-foreground leading-snug group-hover:text-violet-600 transition-colors truncate">
+        <div className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors truncate">
           <ReactMarkdown components={{ p: ({node, ...props}) => <span {...props} /> }}>{content}</ReactMarkdown>
         </div>
         {priority && (
           <Badge className={cn(
-            "text-[8px] font-bold px-1.5 h-4 shrink-0",
-            parseInt(priority) > 7 ? "bg-rose-500" : parseInt(priority) > 4 ? "bg-amber-500" : "bg-violet-500"
+            "text-[8px] font-medium px-1.5 h-4 shrink-0",
+            parseInt(priority) > 7 ? "bg-destructive" : parseInt(priority) > 4 ? "bg-warning" : "bg-primary"
           )}>
             P{priority}
           </Badge>
@@ -567,7 +567,7 @@ export default function ChatPage() {
   const HistoryContent = () => (
     <div className="flex flex-col h-full bg-muted/30">
       <div className="p-4 border-b border-border bg-card">
-        <Button onClick={startNewChat} className="w-full gap-2 bg-violet-600 hover:bg-violet-700 shadow-sm text-white">
+        <Button onClick={startNewChat} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
           <Plus className="w-4 h-4" />
           New Conversation
         </Button>
@@ -586,12 +586,12 @@ export default function ChatPage() {
               )}
             >
               <div className="flex items-center justify-between">
-                <span className={cn("text-sm font-semibold truncate pr-6", conversationId === c.id ? "text-violet-500" : "text-foreground/80")}>
+                <span className={cn("text-sm font-semibold truncate pr-6", conversationId === c.id ? "text-primary" : "text-foreground/80")}>
                   {c.title || 'Untitled Chat'}
                 </span>
                 <button
                   onClick={(e) => deleteConversation(c.id, e)}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:text-rose-500 text-muted-foreground transition-all absolute right-2 top-2"
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:text-destructive text-muted-foreground transition-all absolute right-2 top-2"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -611,10 +611,10 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-emerald-500/10 rounded-lg">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="p-1.5 bg-success/10 rounded-lg">
+              <CheckCircle2 className="w-4 h-4 text-success" />
             </div>
-            <h4 className="text-xs font-black uppercase tracking-widest text-emerald-600">
+            <h4 className="text-xs font-black uppercase tracking-widest text-success">
               Confirmed Strategy
             </h4>
           </div>
@@ -623,9 +623,9 @@ export default function ChatPage() {
           ) : (
             <div className="space-y-3 pl-2">
               {confirmedStrategy.map((item, idx) => (
-                <div key={idx} className="p-3 bg-card border border-emerald-500/10 rounded-xl shadow-sm text-sm font-medium leading-relaxed group hover:border-emerald-500/30 transition-all">
+                <div key={idx} className="p-3 bg-card border border-success/10 rounded-xl shadow-sm text-sm font-medium leading-relaxed group hover:border-success/30 transition-all">
                   <div className="flex items-start gap-3">
-                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-success shrink-0" />
                     <span className="text-foreground/90">{item.insight}</span>
                   </div>
                 </div>
@@ -636,10 +636,10 @@ export default function ChatPage() {
 
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-violet-500/10 rounded-lg">
-              <Activity className="w-4 h-4 text-violet-600" />
+            <div className="p-1.5 bg-primary/10 rounded-lg">
+              <Activity className="w-4 h-4 text-primary" />
             </div>
-            <h4 className="text-xs font-black uppercase tracking-widest text-violet-600">
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary">
               Emerging Observations
             </h4>
           </div>
@@ -648,9 +648,9 @@ export default function ChatPage() {
           ) : (
             <div className="space-y-3 pl-2">
               {emergingObservations.map((item, idx) => (
-                <div key={idx} className="p-3 bg-muted/50 border border-border/50 rounded-xl text-sm font-medium leading-relaxed group hover:border-violet-500/30 transition-all">
+                <div key={idx} className="p-3 bg-muted/50 border border-border/50 rounded-xl text-sm font-medium leading-relaxed group hover:border-primary/30 transition-all">
                   <div className="flex items-start gap-3">
-                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                     <span className="text-muted-foreground group-hover:text-foreground transition-colors">{item.insight}</span>
                   </div>
                 </div>
@@ -689,15 +689,15 @@ export default function ChatPage() {
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <div className="p-2 bg-violet-500/10 rounded-xl border border-violet-500/20 shadow-sm">
-                <BrainCircuit className="w-5 h-5 text-violet-500" />
+              <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 shadow-sm">
+                <BrainCircuit className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h2 className="font-semibold text-foreground leading-tight">Strategy Room</h2>
+                <h2 className="font-semibold text-foreground dark:text-white leading-tight">Strategy Room</h2>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success/75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
                   </span>
                   <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Neural Link Active</span>
                 </div>
@@ -708,7 +708,7 @@ export default function ChatPage() {
               variant="outline"
               size="sm"
               onClick={() => setShowContext(true)}
-              className="gap-2 border-violet-500/20 hover:bg-violet-500/5 text-violet-600 font-bold rounded-full transition-all"
+              className="gap-2 border-primary/20 hover:bg-primary/5 text-primary font-medium rounded-full transition-all"
             >
               <Sparkles className="w-3.5 h-3.5" />
               Context
@@ -720,16 +720,16 @@ export default function ChatPage() {
             <div className="max-w-3xl mx-auto space-y-8 pb-24">
               {loadingHistory ? (
                 <div className="flex flex-col items-center justify-center h-full space-y-4">
-                  <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   <p className="text-sm text-muted-foreground">Retrieving history...</p>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <div className="p-4 bg-card border border-border shadow-xl rounded-2xl">
-                    <Bot className="w-10 h-10 text-violet-500" />
+                    <Bot className="w-10 h-10 text-primary" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-bold text-foreground tracking-tight">Welcome to the Strategy Room</h3>
+                    <h3 className="text-2xl font-medium text-foreground dark:text-white tracking-tight">Welcome to the Strategy Room</h3>
                     <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed">
                       Ask me about your market, analyze your business model, or architect your technical stack.
                     </p>
@@ -738,18 +738,18 @@ export default function ChatPage() {
               ) : (
                 messages.map((msg) => (
                   <div key={msg.id} className={`flex gap-4 group animate-in fade-in slide-in-from-bottom-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <Avatar className={`w-8 h-8 mt-1 border shadow-sm ${msg.role === 'user' ? 'border-violet-500/20' : 'border-border'}`}>
+                    <Avatar className={`w-8 h-8 mt-1 border shadow-sm ${msg.role === 'user' ? 'border-primary/20' : 'border-border'}`}>
                       {msg.role === 'user' ? (
-                        <div className="bg-violet-600 w-full h-full flex items-center justify-center text-white text-[10px] font-bold">U</div>
+                        <div className="bg-primary w-full h-full flex items-center justify-center text-primary-foreground text-[10px] font-medium">U</div>
                       ) : (
-                        <div className="bg-card w-full h-full flex items-center justify-center text-violet-500"><Bot className="w-4 h-4" /></div>
+                        <div className="bg-card w-full h-full flex items-center justify-center text-primary"><Bot className="w-4 h-4" /></div>
                       )}
                     </Avatar>
 
                     <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                       <div className={`px-5 py-4 rounded-2xl ${msg.role === 'user'
-                        ? 'bg-violet-600 text-white rounded-tr-sm shadow-md'
-                        : 'bg-muted/50 text-foreground rounded-tl-sm border border-border shadow-sm'
+                        ? 'bg-primary text-primary-foreground rounded-tr-sm shadow-md'
+                        : 'bg-muted/50 text-foreground dark:text-white rounded-tl-sm border border-border shadow-sm'
                         }`}>
                         {msg.role === 'assistant' && !msg.content && loading ? (
                           <div className="flex space-x-1 h-5 items-center px-2">
@@ -761,8 +761,8 @@ export default function ChatPage() {
                           <div className={`prose dark:prose-invert prose-sm sm:prose-base max-w-none break-words ${msg.role === 'user' ? 'prose-invert' : ''}`}>
                             <ReactMarkdown
                               components={{
-                                h1: ({ node, ...props }) => <h1 className="text-xl font-bold mb-4 mt-6 first:mt-0" {...props} />,
-                                h2: ({ node, ...props }) => <h2 className="text-lg font-bold mb-3 mt-5 first:mt-0" {...props} />,
+                                h1: ({ node, ...props }) => <h1 className="text-xl font-medium mb-4 mt-6 first:mt-0" {...props} />,
+                                h2: ({ node, ...props }) => <h2 className="text-lg font-medium mb-3 mt-5 first:mt-0" {...props} />,
                                 h3: ({ node, ...props }) => <h3 className="text-md font-semibold mb-2 mt-4" {...props} />,
                                 ul: ({ node, ...props }) => <ul className="space-y-2 mb-6" {...props} />,
                                 li: ({ node, ...props }) => {
@@ -800,8 +800,8 @@ export default function ChatPage() {
                                   // 1. Detect and render System Execution Notes
                                   if (rawText.startsWith('[System:')) {
                                     return (
-                                      <p className="text-[11px] font-bold text-emerald-500 bg-emerald-500/5 px-2.5 py-1.5 rounded-lg border border-emerald-500/10 flex items-center gap-2 my-4 shadow-sm italic">
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                      <p className="text-[11px] font-medium text-success bg-success/5 px-2.5 py-1.5 rounded-lg border border-success/10 flex items-center gap-2 my-4 shadow-sm italic">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-success" />
                                         {rawText.slice(1, -1)}
                                       </p>
                                     );
@@ -830,10 +830,10 @@ export default function ChatPage() {
                                     const flushBoard = (key: number) => {
                                       if (currentBoard.length === 0) return null;
                                       const board = (
-                                        <div key={`board-${key}`} className="my-6 border border-border/60 rounded-2xl overflow-hidden bg-card/50 shadow-sm border-l-4 border-l-violet-500">
+                                        <div key={`board-${key}`} className="my-6 border border-border/60 rounded-2xl overflow-hidden bg-card/50 shadow-sm border-l-4 border-l-primary">
                                           <div className="bg-muted/50 px-4 py-2 border-b border-border/50 flex items-center justify-between">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Strategic Tactical Board</span>
-                                            <Badge variant="outline" className="text-[9px] font-bold bg-card">{currentBoard.length} Operations</Badge>
+                                            <Badge variant="outline" className="text-[9px] font-medium bg-card">{currentBoard.length} Operations</Badge>
                                           </div>
                                           <div className="p-3 space-y-2">
                                             {currentBoard.map((task, idx) => (
@@ -946,7 +946,7 @@ export default function ChatPage() {
                             onClick={() => copyToClipboard(msg.content, msg.id)}
                             className="text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
                           >
-                            {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                            {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
                         )}
                       </div>
@@ -960,7 +960,7 @@ export default function ChatPage() {
 
           {/* Input Area */}
           <div className="p-4 bg-card border-t border-border z-20">
-            <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto relative flex items-end gap-2 bg-muted/50 border border-border rounded-2xl p-2 focus-within:border-violet-500/50 transition-all">
+            <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto relative flex items-end gap-2 bg-muted/50 border border-border rounded-2xl p-2 focus-within:border-primary/50 transition-all">
               <Textarea
                 ref={textareaRef}
                 value={input}
@@ -968,7 +968,7 @@ export default function ChatPage() {
                 onKeyDown={handleKeyDown}
                 placeholder="Type your strategic inquiry..."
                 disabled={loading && !abortControllerRef.current}
-                className="min-h-[48px] w-full resize-none bg-transparent border-0 focus-visible:ring-0 px-3 py-3 text-base scrollbar-thin"
+                className="min-h-[48px] w-full resize-none bg-transparent border-0 focus-visible:ring-0 px-3 py-3 text-base scrollbar-thin text-foreground dark:text-white"
                 rows={1}
               />
               <Button 
@@ -977,7 +977,7 @@ export default function ChatPage() {
                 size="icon"
                 className={cn(
                   "h-10 w-10 rounded-xl transition-all",
-                  input.trim() ? "bg-violet-600 hover:bg-violet-700 shadow-md text-white" : "bg-muted text-muted-foreground"
+                  input.trim() ? "bg-primary hover:bg-primary/90 shadow-md text-primary-foreground" : "bg-muted text-muted-foreground"
                 )}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -1001,8 +1001,8 @@ export default function ChatPage() {
       <Sheet open={showContext} onOpenChange={setShowContext}>
         <SheetContent side="right" className="p-0 w-96 bg-background border-l border-border">
           <SheetHeader className="p-4 border-b border-border text-left flex flex-row items-center gap-3">
-            <div className="p-2 bg-violet-500/10 rounded-xl">
-              <Sparkles className="w-5 h-5 text-violet-500" />
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <Sparkles className="w-5 h-5 text-primary" />
             </div>
             <SheetTitle className="text-foreground">Strategic Context</SheetTitle>
           </SheetHeader>
