@@ -243,7 +243,7 @@ const HeroSection = () => {
             </div>
             
             <div className="absolute inset-0" style={{ transform: "rotateX(75deg) rotateY(-10deg)", transformStyle: "preserve-3d" }}>
-              {['Data Moat', 'Briefings', 'Live Web', 'Ledger'].map((item, i) => {
+              {['Idea' , 'Strategy', 'Roadmap' , 'Execution'].map((item, i) => {
                 const angle = (i / 4) * 360;
                 return (
                   <motion.div
