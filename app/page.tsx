@@ -483,22 +483,22 @@ const SecuritySection = () => {
           <div className="order-2 lg:order-1 relative">
             <div className="absolute inset-0 bg-purple-500/10 rounded-full blur-[100px]" />
             <div className="relative grid grid-cols-2 gap-4">
-              <div className="p-6 rounded-2xl bg-[#0f2540] border border-purple-500/20 flex flex-col items-center text-center">
+              <div className="p-6 rounded-2xl bg-[#0f2540] border border-purple-500/20 flex flex-col items-center text-center h-full">
                 <Lock className="w-8 h-8 text-purple-400 mb-4" />
                 <h4 className="text-white font-bold text-sm mb-2">BAM Protocol</h4>
                 <p className="text-slate-400 text-[10px]">Backend Authority Model prevents data cross-contamination.</p>
               </div>
-              <div className="p-6 rounded-2xl bg-[#0f2540] border border-cyan-500/20 flex flex-col items-center text-center mt-8">
+              <div className="p-6 rounded-2xl bg-[#0f2540] border border-cyan-500/20 flex flex-col items-center text-center h-full">
                 <ShieldAlert className="w-8 h-8 text-cyan-400 mb-4" />
                 <h4 className="text-white font-bold text-sm mb-2">XML Isolation</h4>
                 <p className="text-slate-400 text-[10px]">Strict data wrapping prevents adversarial prompt injection.</p>
               </div>
-              <div className="p-6 rounded-2xl bg-[#0f2540] border border-blue-500/20 flex flex-col items-center text-center">
+              <div className="p-6 rounded-2xl bg-[#0f2540] border border-blue-500/20 flex flex-col items-center text-center h-full">
                 <Fingerprint className="w-8 h-8 text-blue-400 mb-4" />
                 <h4 className="text-white font-bold text-sm mb-2">Tenant Hygiene</h4>
                 <p className="text-slate-400 text-[10px]">Force-injected JWT derived tenant mapping at the tool layer.</p>
               </div>
-              <div className="p-6 rounded-2xl bg-[#0f2540] border border-green-500/20 flex flex-col items-center text-center mt-8">
+              <div className="p-6 rounded-2xl bg-[#0f2540] border border-green-500/20 flex flex-col items-center text-center h-full">
                 <Database className="w-8 h-8 text-green-400 mb-4" />
                 <h4 className="text-white font-bold text-sm mb-2">pgvector Guard</h4>
                 <p className="text-slate-400 text-[10px]">Encrypted semantic memory with strict RLS policies.</p>
@@ -650,12 +650,7 @@ const Footer = () => (
           <p className="text-slate-400 text-sm max-w-xs mb-8 leading-relaxed">
             The first AI Business Operating System (BOS) designed to bridge the gap between abstract strategy and tactical execution. Built for Level 3.5 Intelligence.
           </p>
-          <div className="flex items-center gap-4 text-slate-500">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] font-mono uppercase tracking-widest text-green-400">All Systems Operational</span>
-            </div>
-          </div>
+          
         </div>
 
         {/* Intelligence Links */}
@@ -695,7 +690,7 @@ const Footer = () => (
       {/* Bottom Bar */}
       <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="text-slate-500 text-xs font-mono uppercase tracking-tighter">
-          © 2024 MINDALL SYSTEMS INC. | GROUNDED IN PROPRIETARY TRUTH.
+          © 2026 MINDALL SYSTEMS INC. | GROUNDED IN PROPRIETARY TRUTH.
         </div>
         <div className="flex items-center gap-6">
           <div className="flex -space-x-2">
