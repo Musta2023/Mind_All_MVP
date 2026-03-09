@@ -12,6 +12,44 @@ MindAll has evolved through four major strategic levels:
 *   **Level 3: Real-Time Intelligence** — Automated strategic routing between internal memory and live web retrieval (Tavily).
 *   **Level 3.5: Strategic Ledger** — Interactive memory alignment, knowledge lineage tracking, and real-time strategic context sidebars.
 
+### 🔄 System Workflow
+```mermaid
+graph TD
+    subgraph "1. Knowledge & Identity"
+        A[Founder Onboarding] --> B[Identity DNA]
+        C[Document Upload] --> D[Knowledge Vault]
+        D --> E[Worker: Semantic Chunking]
+        E --> F[Vector Memory: pgvector]
+    end
+
+    subgraph "2. Strategic Intelligence"
+        G[Strategy Room: Chat] --> H{Intelligence Router}
+        H -->|Internal| F
+        H -->|External| I[Live Web Intelligence: Tavily]
+        F & I --> J[Context Assembly: XML Tags]
+        J --> K[Strategic Response]
+        K --> L[Emerging Observations]
+    end
+
+    subgraph "3. Governance & Logic"
+        L --> M[Strategic Ledger]
+        M -->|Verification| N[The Strategic Core: Active DNA]
+        N -->|Grounding| J
+    end
+
+    subgraph "4. Operational Planning"
+        N --> O[AI Architect: Roadmap Gen]
+        O --> P[90-Day Growth Blueprint]
+        P --> Q[Objectives & Tactical Tasks]
+    end
+
+    subgraph "5. Tactical Execution"
+        Q --> R[Action Board]
+        R --> S[Real-time Deployment Tracking]
+        S --> T[Executive Briefing Memo]
+    end
+```
+
 ---
 
 ## ✨ Core Features
