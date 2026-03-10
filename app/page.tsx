@@ -625,7 +625,7 @@ const FinalCTA = () => (
           <p className="text-lg text-slate-300 mb-6 max-w-2xl mx-auto">Join the new generation of founders building with grounded intelligence. Deploy your Strategic Co-Founder today.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/auth/register" className="px-8 py-4 bg-white text-[#081A2E] rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)] text-center">Initialize Operating System</Link>
-            <Link href="/auth/login" className="px-8 py-4 bg-transparent border border-white/20 text-white rounded-full font-medium text-lg hover:bg-white/5 transition-colors text-center">Contact Sales</Link>
+            <Link href="/auth/login" className="px-8 py-4 bg-transparent border border-white/20 text-white rounded-full font-medium text-lg hover:bg-white/5 transition-colors text-center">Login</Link>
           </div>
         </div>
       </motion.div>
