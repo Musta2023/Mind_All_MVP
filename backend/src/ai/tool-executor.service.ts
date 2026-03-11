@@ -1,55 +1,50 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '@database/prisma.service';
-import { StartupService } from '../startup/startup.service';
-import { ConfigService } from '@nestjs/config';
+import { IAiTool, ToolContext } from './tools/interfaces/ai-tool.interface';
+import { SearchWebTool } from './tools/implementations/search-web.tool';
+import { CreateGoalTool } from './tools/implementations/create-goal.tool';
+import { UpdateGoalTool } from './tools/implementations/update-goal.tool';
+import { UpdateStartupProfileTool } from './tools/implementations/update-startup-profile.tool';
+import { CreateTaskTool } from './tools/implementations/create-task.tool';
+import { UpdateTaskTool } from './tools/implementations/update-task.tool';
+import { ListTasksTool } from './tools/implementations/list-tasks.tool';
 
 @Injectable()
-export class ToolExecutorService {
+export class ToolExecutorService implements OnModuleInit {
   private readonly logger = new Logger(ToolExecutorService.name);
+  private readonly tools = new Map<string, IAiTool>();
 
   constructor(
-    private prisma: PrismaService,
-    private startupService: StartupService,
-    private configService: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly searchWebTool: SearchWebTool,
+    private readonly createGoalTool: CreateGoalTool,
+    private readonly updateGoalTool: UpdateGoalTool,
+    private readonly updateStartupProfileTool: UpdateStartupProfileTool,
+    private readonly createTaskTool: CreateTaskTool,
+    private readonly updateTaskTool: UpdateTaskTool,
+    private readonly listTasksTool: ListTasksTool,
   ) {}
 
-  async searchWeb(query: string) {
-    const apiKey = this.configService.get<string>('TAVILY_API_KEY');
-    if (!apiKey) {
-      this.logger.warn('TAVILY_API_KEY not set, web search disabled.');
-      return { error: 'Web search is currently unavailable.' };
-    }
+  onModuleInit() {
+    this.registerTool(this.searchWebTool);
+    this.registerTool(this.createGoalTool);
+    this.registerTool(this.updateGoalTool);
+    this.registerTool(this.updateStartupProfileTool);
+    this.registerTool(this.createTaskTool);
+    this.registerTool(this.updateTaskTool);
+    this.registerTool(this.listTasksTool);
+  }
 
-    try {
-      const response = await fetch('https://api.tavily.com/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          api_key: apiKey,
-          query,
-          search_depth: 'advanced',
-          include_answer: true,
-          max_results: 5,
-        }),
-      });
+  private registerTool(tool: IAiTool) {
+    this.tools.set(tool.name, tool);
+  }
 
-      const data = (await response.json()) as any;
-      return {
-        answer: data.answer,
-        results: data.results?.map((r: any) => ({
-          title: r.title,
-          url: r.url,
-          content: r.content,
-        })),
-      };
-    } catch (error) {
-      this.logger.error('Web search failed:', error);
-      throw new Error('Failed to perform web search.');
-    }
+  getTool(name: string): IAiTool | undefined {
+    return this.tools.get(name);
   }
 
   /**
-   * Executes a tool called by the AI with strict tenant isolation.
+   * Executes a tool called by the AI with strict tenant isolation via Strategy Pattern.
    */
   async executeTool(
     tenantId: string,
@@ -59,71 +54,16 @@ export class ToolExecutorService {
   ) {
     this.logger.log(`[Tool] Executing tool ${toolName} for tenant ${tenantId}`);
 
+    const tool = this.tools.get(toolName);
+    if (!tool) {
+      this.logger.error(`Unknown tool requested: ${toolName}`);
+      throw new Error(`Unknown tool: ${toolName}`);
+    }
+
+    const context: ToolContext = { tenantId, userId, args };
+
     try {
-      let result: any;
-      switch (toolName) {
-        case 'searchWeb':
-          result = await this.searchWeb(args.query);
-          break;
-
-        case 'createGoal':
-          result = await this.startupService.createGoal(tenantId, {
-            title: args.title,
-            deadline: args.deadline,
-            metrics: args.metrics || {},
-            priority: args.priority,
-          });
-          break;
-
-        case 'updateGoal':
-          result = await this.startupService.updateGoal(tenantId, args.goalId, {
-            title: args.title,
-            deadline: args.deadline,
-            metrics: args.metrics,
-            priority: args.priority,
-          });
-          break;
-
-        case 'updateStartupProfile':
-          result = await this.startupService.updateProfile(tenantId, args);
-          break;
-
-        case 'createTask':
-          let verifiedGoalId = args.goalId;
-          if (verifiedGoalId) {
-            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-            if (!uuidRegex.test(verifiedGoalId)) {
-              verifiedGoalId = undefined;
-            }
-          }
-
-          result = await this.startupService.createTask(tenantId, userId, {
-            title: args.title,
-            description: args.description,
-            priority: args.priority,
-            dueDate: args.dueDate,
-            goalId: verifiedGoalId,
-            status: args.status,
-          });
-          break;
-
-        case 'updateTask':
-          result = await this.startupService.updateTask(tenantId, args.taskId, {
-            title: args.title,
-            description: args.description,
-            priority: args.priority,
-            dueDate: args.dueDate,
-            status: args.status,
-          });
-          break;
-
-        case 'listTasks':
-          result = await this.startupService.getTasks(tenantId, userId);
-          break;
-
-        default:
-          throw new Error(`Unknown tool: ${toolName}`);
-      }
+      const result = await tool.execute(context);
 
       // Log the successful execution
       await this.prisma.toolExecutionLog.create({
@@ -138,7 +78,7 @@ export class ToolExecutorService {
       });
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`[Tool] Execution failed for tool ${toolName}:`, error);
 
       // Log the failed execution

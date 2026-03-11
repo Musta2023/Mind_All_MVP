@@ -1,52 +1,27 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '@database/prisma.service';
-import { AiOrchestrationService } from './ai-orchestration.service';
+import { AiClientService } from './services/ai-client.service';
+import { EmbeddingService } from './services/embedding.service';
 import { ConfigService } from '@nestjs/config';
-import Piscina from 'piscina';
-import * as path from 'path';
-import { pathToFileURL } from 'url';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { SecurityLogger } from '../common/utils/security-logger';
 
 @Injectable()
 export class MemoryService {
-  private workerPool: Piscina;
-
   constructor(
     private prisma: PrismaService,
-    @Inject(forwardRef(() => AiOrchestrationService))
-    private aiService: AiOrchestrationService,
+    private aiClient: AiClientService,
+    private embeddingService: EmbeddingService,
     private configService: ConfigService,
     private eventEmitter: EventEmitter2,
-  ) {
-    // Environment-aware worker path resolution
-    const isTsNode = !!require.extensions['.ts'] || process.execArgv.join().includes('ts-node');
-    const workerPath = path.resolve(__dirname, 'embedding.worker.js');
-    
-    // Convert to file URL for Windows/ESM compatibility
-    const workerUrl = pathToFileURL(workerPath).href;
-    console.log(`[Memory] Loading worker from: ${workerUrl} (isTsNode: ${isTsNode})`);
-
-    this.workerPool = new Piscina({
-      filename: workerUrl,
-      minThreads: 1,
-      maxThreads: Math.max(2, Math.floor(require('os').cpus().length / 2)),
-      // Handle TypeScript environment if necessary
-      execArgv: isTsNode ? ['-r', 'ts-node/register'] : [],
-    });
-  }
+  ) {}
 
   /**
    * Generates a vector embedding locally using Xenova offloaded to a worker pool
    */
   async generateEmbedding(text: string): Promise<number[]> {
-    try {
-      return await this.workerPool.run(text, { name: 'generateEmbedding' });
-    } catch (error) {
-      console.error('[Memory] Embedding generation failed:', error);
-      throw error;
-    }
+    return this.embeddingService.generateEmbedding(text);
   }
 
   /**
@@ -68,10 +43,7 @@ export class MemoryService {
     });
 
     try {
-      const chunks: { text: string; embedding: number[] }[] = await this.workerPool.run(
-        { type, buffer: file.buffer, filename: file.originalname },
-        { name: 'processDocument' }
-      );
+      const chunks = await this.embeddingService.processDocumentChunks(file);
 
       if (!chunks || chunks.length === 0) {
         console.warn(`[Memory] No chunks extracted from ${file.originalname}. Possibly empty file or parsing failed.`);
@@ -236,7 +208,7 @@ EPISTEMIC INVARIANTS:
 Return ONLY valid JSON: { "insights": [{ "insight": "string", "type": "DECISION|HYPOTHESIS|FACT", "evidenceScore": number, "context": "string" }] }
       `;
 
-      const extraction = await this.aiService.generateJSON(extractionPrompt);
+      const extraction = await this.aiClient.generateJSON(extractionPrompt);
 
       for (const item of extraction.insights) {
         // 1. Semantic Deduplication (Novelty Check)
@@ -342,7 +314,7 @@ Return ONLY valid JSON: { "type": "TYPE", "reasoning": "string", "confidence": 0
     `;
 
     try {
-      return await this.aiService.generateJSON(prompt);
+      return await this.aiClient.generateJSON(prompt);
     } catch (error) {
       return { type: 'NEUTRAL', reasoning: 'Inference failed', confidence: 0 };
     }

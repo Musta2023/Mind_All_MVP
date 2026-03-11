@@ -35,10 +35,12 @@ import {
   FileText,
   Gavel,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  ChevronDown
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { getAccessToken, ApiClient, API_URL } from '@/lib/api-client';
+import remarkGfm from 'remark-gfm';
+import { ApiClient } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import {
   Sheet,
@@ -49,6 +51,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { useStrategicStore } from '@/lib/store/use-strategic-store';
+import { useChatOrchestrator } from '@/hooks/useChatOrchestrator';
+import { extractToolBlocks } from '@/lib/utils/tool-parser';
 
 const TaskCard = ({ task }: { task: any }) => {
   const [loading, setLoading] = useState(false);
@@ -100,31 +105,31 @@ const TaskCard = ({ task }: { task: any }) => {
 
   return (
     <Card className={cn(
-      "my-4 border-l-4 shadow-sm overflow-hidden animate-in zoom-in-95 duration-300",
+      "my-4 border-l-4 shadow-sm overflow-hidden animate-in zoom-in-95 duration-300 w-full",
       isSearch ? "border-l-accent bg-accent/5" :
       isGoal ? "border-l-success bg-success/5" :
       "border-l-primary bg-primary/5"
     )}>
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+      <CardHeader className="pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className={cn(
-            "p-2 rounded-lg",
+            "p-2 rounded-lg shrink-0",
             isSearch ? "bg-accent/10" : isGoal ? "bg-success/10" : "bg-primary/10"
           )}>
             {getIcon()}
           </div>
-          <div>
-            <CardTitle className="text-sm font-medium text-foreground">
+          <div className="min-w-0">
+            <CardTitle className="text-sm font-medium text-foreground truncate">
               {getLabel()}
             </CardTitle>
-            <p className="text-[10px] text-muted-foreground uppercase font-medium tracking-widest">
+            <p className="text-[10px] text-muted-foreground uppercase font-medium tracking-widest truncate">
               {isSearch ? 'Real-time Intelligence' : 'Level 4 Operational Task'}
             </p>
           </div>
         </div>
         {(args.priority || args.deadline) && (
           <Badge className={cn(
-            "text-[9px] font-medium px-1.5 py-0.5",
+            "text-[9px] font-medium px-1.5 py-0.5 w-fit",
             args.priority === 'high' || args.priority > 7 ? "bg-destructive" : 
             isGoal ? "bg-success" : "bg-primary"
           )}>
@@ -133,16 +138,16 @@ const TaskCard = ({ task }: { task: any }) => {
         )}
       </CardHeader>
       <CardContent className="space-y-3">
-        <h4 className="text-sm font-semibold text-foreground leading-snug">
+        <h4 className="text-sm font-semibold text-foreground leading-snug break-words">
           {getTitle()}
         </h4>
         {args.description && (
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed break-words">
             {args.description}
           </p>
         )}
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-3">
             {(args.dueDate || args.deadline) && (
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
                 <Clock className="w-3 h-3" />
@@ -164,7 +169,7 @@ const TaskCard = ({ task }: { task: any }) => {
               disabled={loading || added}
               onClick={handleAddTask}
               className={cn(
-                "h-7 text-[10px] font-medium px-3 gap-1.5 transition-all",
+                "h-7 text-[10px] font-medium px-3 gap-1.5 transition-all w-full sm:w-auto",
                 added ? "bg-success/10 text-success border-success/20 hover:bg-success/10" : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
               )}
             >
@@ -177,19 +182,6 @@ const TaskCard = ({ task }: { task: any }) => {
     </Card>
   );
 };
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-interface Conversation {
-  id: string;
-  title: string;
-  preview: string;
-  createdAt: string;
-}
 
 const EpistemicHonestyCard = ({ content }: { content: string }) => {
   const lines = content.split('\n').filter(l => l.includes(':'));
@@ -295,22 +287,29 @@ const TaskCardItem = ({ status, content, priority }: { status: string, content: 
   );
 };
 
-import { useStrategicStore } from '@/lib/store/use-strategic-store';
-
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [conversationId, setConversationId] = useState<string>();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showContext, setShowContext] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
-  // Zustand Store
+  const { 
+    messages,
+    conversations,
+    conversationId,
+    loading,
+    loadingHistory,
+    loadConversations,
+    loadConversation,
+    startNewChat,
+    deleteConversation,
+    sendMessage,
+    abortControllerRef
+  } = useChatOrchestrator();
+
   const { 
     confirmedStrategy, 
     emergingObservations, 
@@ -320,69 +319,51 @@ export default function ChatPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  };
+
   useEffect(() => {
-    loadConversations();
+    loadConversations().then(loadedConversations => {
+      const latest = loadedConversations?.[0];
+      if (latest && !conversationId) {
+        loadConversation(latest.id, () => {
+          fetchDashboardData();
+          setTimeout(() => scrollToBottom('instant'), 100);
+        });
+      }
+    });
+
     if (!profile) {
       fetchDashboardData();
     }
-    
-    // Automatically load the latest conversation if none is selected
-    // but don't create one if none exist.
-    const initializeChat = async () => {
-      try {
-        const data = await ApiClient.get('/chat/conversations');
-        const latest = data.conversations?.[0];
-        if (latest && !conversationId) {
-          loadConversation(latest.id);
-        }
-      } catch (e) {}
-    };
-    
-    initializeChat();
   }, []);
 
-  const loadConversations = async () => {
-    try {
-      const data = await ApiClient.get('/chat/conversations');
-      setConversations(data.conversations || []);
-      return data.conversations;
-    } catch (error) {
-      console.error('Failed to load conversations:', error);
-      return [];
+  // Scroll to bottom when messages change, unless user has scrolled up
+  useEffect(() => {
+    if (!showScrollButton) {
+      scrollToBottom();
+    }
+  }, [messages, loading]);
+
+  // Scroll to bottom when loading a new conversation
+  useEffect(() => {
+    if (conversationId) {
+      setTimeout(() => scrollToBottom('instant'), 100);
+    }
+  }, [conversationId]);
+
+  const handleScroll = () => {
+    if (scrollAreaRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 300;
+      setShowScrollButton(!isNearBottom);
     }
   };
 
-  const loadConversation = async (id: string) => {
-    setLoadingHistory(true);
-    try {
-      const data = await ApiClient.get(`/chat/conversations/${id}`);
-      setMessages(data.messages || []);
-      setConversationId(id);
-      setShowHistory(false);
-      
-      // Refresh global store to sync any new insights from history
-      fetchDashboardData();
-    } catch (error) {
-      console.error('Failed to load conversation:', error);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
-
-  const startNewChat = () => {
-    setMessages([]);
-    setConversationId(undefined); // Clear ID so next message creates a NEW conversation
-    setShowHistory(false);
-    if (textareaRef.current) {
-      textareaRef.current.value = '';
-      textareaRef.current.focus();
-    }
-  };
-
-  const deleteConversation = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteChatClick = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setChatToDelete(id);
     setIsDeleteOpen(true);
@@ -391,21 +372,11 @@ export default function ChatPage() {
   const confirmDeleteChat = async () => {
     if (!chatToDelete) return;
     try {
-      await ApiClient.delete(`/chat/conversations/${chatToDelete}`);
-      setConversations(prev => prev.filter(c => c.id !== chatToDelete));
-      if (conversationId === chatToDelete) {
-        startNewChat();
-      }
-    } catch (error) {
-      console.error('Failed to delete conversation:', error);
+      await deleteConversation(chatToDelete);
     } finally {
       setIsDeleteOpen(false);
       setChatToDelete(null);
     }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -419,8 +390,17 @@ export default function ChatPage() {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage(e as unknown as React.FormEvent);
+      handleSendMessage();
     }
+  };
+
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!input.trim() || loading) return;
+    const userMessage = input.trim();
+    setInput('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    await sendMessage(userMessage);
   };
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -429,140 +409,6 @@ export default function ChatPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const stopGeneration = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-      setLoading(false);
-    }
-  };
-
-  const handleSendMessage = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!input.trim() || loading) return;
-
-    const userMessage = input.trim();
-    setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
-
-    const messageId = Date.now().toString();
-    setMessages((prev) => [...prev, { id: messageId, role: 'user', content: userMessage }]);
-    setLoading(true);
-
-    abortControllerRef.current = new AbortController();
-
-    try {
-      const token = await getAccessToken();
-      const chatSendUrl = new URL('chat/send', API_URL).toString();
-      let response = await fetch(chatSendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          conversationId,
-          message: userMessage,
-        }),
-        signal: abortControllerRef.current.signal,
-      });
-
-      // Handle token expiration/401
-      if (response.status === 401) {
-        const { refreshAccessToken } = await import('@/lib/api-client');
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          // Retry once with new token
-          response = await fetch(chatSendUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${newToken}`,
-            },
-
-            credentials: 'include',
-            body: JSON.stringify({
-              conversationId,
-              message: userMessage,
-            }),
-            signal: abortControllerRef.current.signal,
-          });
-        } else {
-          window.location.href = '/auth/login';
-          return;
-        }
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to send message' }));
-        throw new Error(errorData.message || 'Failed to send message');
-      }
-
-      const assistantMsgId = (Date.now() + 1).toString();
-      setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', content: '' }]);
-
-      let assistantMessage = '';
-      const reader = response.body?.getReader();
-
-      if (reader) {
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const parts = buffer.split('\n\n');
-          buffer = parts.pop() || '';
-
-          for (const part of parts) {
-            if (part.startsWith('event: token')) {
-              const dataLine = part.split('\n').find(l => l.startsWith('data: '));
-              if (dataLine) {
-                try {
-                  const data = JSON.parse(dataLine.slice(6));
-                  assistantMessage += data.token;
-                  setMessages((prev) =>
-                    prev.map(msg =>
-                      msg.id === assistantMsgId
-                        ? { ...msg, content: assistantMessage }
-                        : msg
-                    )
-                  );
-                } catch (e) { }
-              }
-            } else if (part.startsWith('event: complete')) {
-              const dataLine = part.split('\n').find(l => l.startsWith('data: '));
-              if (dataLine) {
-                try {
-                  const data = JSON.parse(dataLine.slice(6));
-                  if (data.conversationId) {
-                    setConversationId(data.conversationId);
-                    loadConversations();
-                  }
-                } catch (e) { }
-              }
-            }
-          }
-        }
-      }
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log('Generation stopped by user');
-      } else {
-        console.error('Error:', error);
-        setMessages((prev) => [
-          ...prev,
-          { id: Date.now().toString(), role: 'assistant', content: '⚠️ *Connection interrupted. Please try again.*' },
-        ]);
-      }
-    } finally {
-      setLoading(false);
-      abortControllerRef.current = null;
-    }
-  };
 
   const HistoryContent = () => (
     <div className="flex flex-col h-full bg-muted/30">
@@ -716,7 +562,7 @@ export default function ChatPage() {
           </header>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-4 py-6 sm:p-6 scroll-smooth" ref={scrollAreaRef}>
+          <div className="flex-1 overflow-y-auto px-4 py-6 sm:p-6 scroll-smooth" ref={scrollAreaRef} onScroll={handleScroll}>
             <div className="max-w-3xl mx-auto space-y-8 pb-24">
               {loadingHistory ? (
                 <div className="flex flex-col items-center justify-center h-full space-y-4">
@@ -746,8 +592,8 @@ export default function ChatPage() {
                       )}
                     </Avatar>
 
-                    <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                      <div className={`px-5 py-4 rounded-2xl ${msg.role === 'user'
+                    <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] select-text ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`px-5 py-4 rounded-2xl select-text ${msg.role === 'user'
                         ? 'bg-primary text-primary-foreground rounded-tr-sm shadow-md'
                         : 'bg-muted/50 text-foreground dark:text-white rounded-tl-sm border border-border shadow-sm'
                         }`}>
@@ -758,13 +604,15 @@ export default function ChatPage() {
                             <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce"></div>
                           </div>
                         ) : (
-                          <div className={`prose dark:prose-invert prose-sm sm:prose-base max-w-none break-words ${msg.role === 'user' ? 'prose-invert' : ''}`}>
+                          <div className={`prose dark:prose-invert prose-sm sm:prose-base max-w-none break-words select-text ${msg.role === 'user' ? 'prose-invert' : ''}`}>
                             <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
                               components={{
-                                h1: ({ node, ...props }) => <h1 className="text-xl font-medium mb-4 mt-6 first:mt-0" {...props} />,
-                                h2: ({ node, ...props }) => <h2 className="text-lg font-medium mb-3 mt-5 first:mt-0" {...props} />,
-                                h3: ({ node, ...props }) => <h3 className="text-md font-semibold mb-2 mt-4" {...props} />,
-                                ul: ({ node, ...props }) => <ul className="space-y-2 mb-6" {...props} />,
+                                h1: ({ node, ...props }) => <h1 className="text-xl font-bold mb-4 mt-6 first:mt-0 text-foreground" {...props} />,
+                                h2: ({ node, ...props }) => <h2 className="text-lg font-bold mb-3 mt-5 first:mt-0 text-foreground" {...props} />,
+                                h3: ({ node, ...props }) => <h3 className="text-md font-bold mb-2 mt-4 text-foreground" {...props} />,
+                                ul: ({ node, ...props }) => <ul className="space-y-2 mb-6 mt-2" {...props} />,
+                                ol: ({ node, ...props }) => <ol className="space-y-2 mb-6 mt-2 list-decimal ml-4" {...props} />,
                                 li: ({ node, ...props }) => {
                                   const rawText = extractText(props.children);
                                   const taskMatch = rawText.match(/^\[(DONE|TODO|IN_PROGRESS|BLOCKED)\]\s*(.*)$/i);
@@ -782,8 +630,18 @@ export default function ChatPage() {
                                     
                                     return <TaskCardItem status={status} content={content} priority={priority} />;
                                   }
-                                  return <li className="text-sm ml-4 list-disc mb-1" {...props} />;
+                                  return <li className="text-sm ml-4 list-disc mb-1 leading-relaxed text-muted-foreground marker:text-primary" {...props} />;
                                 },
+                                table: ({ node, ...props }) => (
+                                  <div className="my-6 overflow-x-auto rounded-xl border border-border/50 shadow-sm bg-card/50">
+                                    <table className="w-full border-collapse text-xs sm:text-sm" {...props} />
+                                  </div>
+                                ),
+                                thead: ({ node, ...props }) => <thead className="bg-muted/50 border-b border-border/50" {...props} />,
+                                th: ({ node, ...props }) => <th className="px-4 py-3 text-left font-black text-foreground uppercase tracking-widest text-[10px]" {...props} />,
+                                td: ({ node, ...props }) => <td className="px-4 py-3 border-b border-border/50 last:border-0 text-muted-foreground font-medium" {...props} />,
+                                tr: ({ node, ...props }) => <tr className="hover:bg-primary/5 transition-colors border-none" {...props} />,
+                                strong: ({ node, ...props }) => <strong className="font-bold text-foreground" {...props} />,
                                 code: ({ node, ...props }) => {
                                   const content = String(props.children).trim();
                                   if (content.startsWith('{') && content.includes('"tool"')) {
@@ -879,26 +737,7 @@ export default function ChatPage() {
                                   }
 
                                   // 4. Advanced Multi-Block Extractor (JSON tools)
-                                  const jsonBlocks: { start: number; end: number; content: string }[] = [];
-                                  const startRegex = /\{[\s\r\n]*"tool"/g;
-                                  let startMatch;
-
-                                  while ((startMatch = startRegex.exec(rawText)) !== null) {
-                                    const actualStart = startMatch.index;
-                                    let braceCount = 0;
-                                    let foundEnd = false;
-                                    for (let i = actualStart; i < rawText.length; i++) {
-                                      if (rawText[i] === '{') braceCount++;
-                                      if (rawText[i] === '}') braceCount--;
-                                      if (braceCount === 0) {
-                                        jsonBlocks.push({ start: actualStart, end: i + 1, content: rawText.substring(actualStart, i + 1) });
-                                        startRegex.lastIndex = i + 1;
-                                        foundEnd = true;
-                                        break;
-                                      }
-                                    }
-                                    if (!foundEnd) break;
-                                  }
+                                  const jsonBlocks = extractToolBlocks(rawText);
 
                                   if (jsonBlocks.length > 0) {
                                     const elements: React.ReactNode[] = [];
@@ -907,24 +746,24 @@ export default function ChatPage() {
                                     jsonBlocks.forEach((block, i) => {
                                       const textBefore = rawText.substring(lastIndex, block.start).trim();
                                       if (textBefore) {
-                                        elements.push(<span key={`text-${i}`} className="block mb-4 leading-relaxed">{textBefore}</span>);
+                                        elements.push(<span key={`text-${i}`} className="block mb-2 leading-relaxed">{textBefore}</span>);
                                       }
 
                                       try {
                                         const cleanedJson = block.content.replace(/,\s*([\]}])/g, '$1').trim();
                                         elements.push(<TaskCard key={`task-${i}`} task={JSON.parse(cleanedJson)} />);
                                       } catch (e) {
-                                        elements.push(<pre key={`err-${i}`} className="text-[10px] bg-muted p-2 rounded mb-4 overflow-x-auto">{block.content}</pre>);
+                                        elements.push(<pre key={`err-${i}`} className="text-[10px] bg-muted p-2 rounded mb-2 overflow-x-auto whitespace-pre-wrap break-all">{block.content}</pre>);
                                       }
                                       lastIndex = block.end;
                                     });
 
                                     const remainingText = rawText.substring(lastIndex).trim();
                                     if (remainingText) {
-                                      elements.push(<span key="text-final" className="block mb-4 leading-relaxed">{remainingText}</span>);
+                                      elements.push(<span key="text-final" className="block mt-2 leading-relaxed">{remainingText}</span>);
                                     }
 
-                                    return <div className="mb-4">{elements}</div>;
+                                    return <div className="flex flex-col gap-1 my-4">{elements}</div>;
                                   }
                                   
                                   return <p className="mb-4 last:mb-0 leading-relaxed" {...props} />;
@@ -956,6 +795,18 @@ export default function ChatPage() {
               )}
               <div ref={messagesEndRef} className="h-4" />
             </div>
+
+            {/* Scroll to Bottom Button */}
+            {showScrollButton && (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full shadow-lg border border-border animate-in fade-in zoom-in duration-300 z-30 bg-card hover:bg-muted"
+                onClick={() => scrollToBottom()}
+              >
+                <ChevronDown className="w-5 h-5 text-primary" />
+              </Button>
+            )}
           </div>
 
           {/* Input Area */}
