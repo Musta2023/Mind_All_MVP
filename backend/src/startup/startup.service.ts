@@ -2,16 +2,21 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '@database/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateStartupDto, UpdateStartupDto } from './dto/create-startup.dto';
+import { MemoryService } from '../ai/memory.service';
 
 @Injectable()
 export class StartupService {
   constructor(
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
+    @Inject(forwardRef(() => MemoryService))
+    private memoryService: MemoryService,
   ) {}
 
   async createOrUpdate(
@@ -40,6 +45,9 @@ export class StartupService {
           userId,
         } as any,
       });
+
+      // New: Extract foundational memories from profile
+      await this.syncProfileToStrategicCore(tenantId, createStartupDto);
     }
 
     return startup;
@@ -75,8 +83,42 @@ export class StartupService {
       },
     });
 
+    // New: Sync changes to strategic core
+    await this.syncProfileToStrategicCore(tenantId, updateDto);
+
     this.eventEmitter.emit('startup.updated', { tenantId });
     return profile;
+  }
+
+  private async syncProfileToStrategicCore(tenantId: string, data: any) {
+    try {
+      if (data.description) {
+        await this.memoryService.storeConfirmedInsight(
+          tenantId,
+          `Business Mission: ${data.description.substring(0, 300)}`,
+          'FACT',
+          'Onboarding Profile'
+        );
+      }
+      if (data.target) {
+        await this.memoryService.storeConfirmedInsight(
+          tenantId,
+          `Target Market: ${data.target.substring(0, 300)}`,
+          'FACT',
+          'Onboarding Profile'
+        );
+      }
+      if (data.competitiveEdge) {
+        await this.memoryService.storeConfirmedInsight(
+          tenantId,
+          `Competitive Advantage: ${data.competitiveEdge.substring(0, 300)}`,
+          'FACT',
+          'Onboarding Profile'
+        );
+      }
+    } catch (e) {
+      console.error('[Startup] Failed to sync profile to strategic core:', e);
+    }
   }
 
   async createGoal(
@@ -309,8 +351,8 @@ export class StartupService {
       }),
       this.prisma.memoryStore.findMany({
         where: { tenantId, deletedAt: null },
-        take: 20,
-        orderBy: [{ isConfirmed: 'asc' }, { salience: 'desc' }],
+        take: 40,
+        orderBy: [{ isConfirmed: 'desc' }, { salience: 'desc' }],
         select: { 
           id: true, insight: true, memoryType: true, isConfirmed: true, 
           strategyWeight: true, evidenceScore: true, createdAt: true,

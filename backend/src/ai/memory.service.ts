@@ -133,6 +133,56 @@ export class MemoryService {
     }
   }
 
+  async storeConfirmedInsight(
+    tenantId: string,
+    insight: string,
+    type: 'FACT' | 'DECISION' | 'HYPOTHESIS',
+    context: string,
+  ): Promise<void> {
+    try {
+      // 1. Deduplication check
+      const similar = await this.findSimilarMemories(tenantId, insight, 0.95, 1);
+      if (similar.length > 0) {
+        SecurityLogger.log(`[Memory] Duplicate strategic core insight detected. Skipping...`);
+        return;
+      }
+
+      const embedding = await this.generateEmbedding(insight);
+      const vectorString = `[${embedding.join(',')}]`;
+
+      await this.prisma.$executeRawUnsafe(`
+        INSERT INTO "MemoryStore" 
+        ("id", "tenantId", "insight", "context", "salience", "embedding", "memoryType", "evidenceScore", "strategyWeight", "isConfirmed", "updatedAt", "createdAt", "lastUsed", "frequency")
+        VALUES (gen_random_uuid(), $1, $2, $3, 1.0, $4::vector, $5::"MemoryType", 1.0, 0.9, true, NOW(), NOW(), NOW(), 1)
+      `, tenantId, insight, context, vectorString, type);
+
+      SecurityLogger.log(`[Memory] Manually stored confirmed insight: ${insight.substring(0, 50)}...`);
+    } catch (error) {
+      console.error('[Memory] Failed to store confirmed insight:', error);
+      
+      // Basic text-based deduplication fallback
+      const existing = await this.prisma.memoryStore.findFirst({
+        where: { tenantId, insight, deletedAt: null }
+      });
+      
+      if (!existing) {
+        await this.prisma.memoryStore.create({
+          data: {
+            tenantId,
+            insight,
+            context,
+            salience: 1.0,
+            memoryType: type as any,
+            evidenceScore: 1.0,
+            strategyWeight: 0.9,
+            isConfirmed: true,
+            frequency: 1,
+          },
+        });
+      }
+    }
+  }
+
   /**
    * Semantic Retrieval: Finds the most relevant memories for a user query
    */

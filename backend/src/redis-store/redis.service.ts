@@ -30,14 +30,24 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         }
       });
 
-      this.client.on('error', (err) => {
-        // Suppress initial connection flood
+      this.client.on('error', (err: any) => {
+        console.error('[Redis] Error:', err);
+        if (err?.message?.includes('max requests limit exceeded')) {
+          console.error('[Redis] Service limit reached. Disabling Redis features for this session.');
+          this.client.disconnect().catch(() => {});
+          this.client = null;
+        }
       });
 
       await this.client.connect();
       console.log('[Redis] Connected');
-    } catch (error) {
-      console.error('[Redis] Failed to connect:', error);
+    } catch (error: any) {
+      if (error?.message?.includes('max requests limit exceeded')) {
+        console.error('[Redis] Service limit reached during connection. Disabling Redis features.');
+        this.client = null;
+      } else {
+        console.error('[Redis] Failed to connect:', error);
+      }
     }
   }
 
