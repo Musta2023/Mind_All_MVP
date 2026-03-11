@@ -90,7 +90,7 @@ export default function Navigation() {
             variant="ghost"
             onClick={onClick}
             className={cn(
-              'w-full justify-start gap-3 h-10 px-3 rounded-lg transition-all duration-300 relative group overflow-hidden',
+              'w-full justify-start gap-3 h-10 px-3 rounded-sm transition-all duration-300 relative group overflow-hidden',
               isActive
                 ? 'bg-primary/10 text-primary font-medium shadow-glow-soft border border-primary/20'
                 : 'text-muted-foreground hover:bg-accent/10 hover:text-accent-foreground border border-transparent'
@@ -100,7 +100,7 @@ export default function Navigation() {
               <item.icon className={cn("h-4.5 w-4.5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-primary drop-shadow-[0_0_8px_#2FD3FF]" : "text-muted-foreground")} aria-hidden="true" />
               <span className="relative z-10 text-sm">{item.label}</span>
               {isActive && (
-                <div className="absolute left-0 top-1/4 bottom-1/4 w-0.5 bg-primary rounded-full shadow-[0_0_10px_#2FD3FF]" />
+                <div className="absolute left-0 top-1/4 bottom-1/4 w-0.5 bg-primary rounded-sm shadow-[0_0_10px_#2FD3FF]" />
               )}
             </Link>
           </Button>
@@ -143,7 +143,7 @@ export default function Navigation() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="w-full justify-start gap-3 h-14 p-2 rounded-xl transition-all hover:bg-primary/5 border border-transparent hover:border-primary/20 group">
+              <Button variant="ghost" className="w-full justify-start gap-3 h-14 p-2 rounded-sm transition-all hover:bg-primary/5 border border-transparent hover:border-primary/20 group">
                 <Avatar className="h-9 w-9 border border-border group-hover:border-primary/40 transition-all shadow-sm">
                   <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                     {userInitial}
@@ -256,7 +256,7 @@ export default function Navigation() {
                     asChild
                     variant="ghost"
                     onClick={() => setIsOpen(false)}
-                    className="w-full justify-start gap-4 h-12 rounded-xl text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all"
+                    className="w-full justify-start gap-4 h-12 rounded-sm text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all"
                   >
                     <Link href="/profile">
                       <Settings className="h-5 w-5" />
@@ -267,7 +267,7 @@ export default function Navigation() {
                     onClick={handleLogout}
                     variant="ghost"
                     disabled={isLoggingOut}
-                    className="w-full justify-start gap-4 h-12 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive transition-all"
+                    className="w-full justify-start gap-4 h-12 rounded-sm text-destructive hover:bg-destructive/10 hover:text-destructive transition-all"
                   >
                     <LogOut className="h-5 w-5" aria-hidden="true" />
                     {isLoggingOut ? 'Logging out...' : 'Logout'}
@@ -281,3 +281,4 @@ export default function Navigation() {
     </>
   );
 }
+
