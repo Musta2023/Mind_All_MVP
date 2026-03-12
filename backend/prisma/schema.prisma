@@ -44,6 +44,7 @@ model User {
   password  String // bcrypt hashed
   name      String?
   role      String   @default("founder") // founder, admin
+  language  String   @default("en")      // en, fr
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?

@@ -28,7 +28,7 @@
   --border: #E2E8F0;
   --input: #E2E8F0;
   --ring: #0284C7;
-  --radius: 0.125rem; 
+  --radius: 0.5rem; 
 
   /* Sidebar Light Defaults */
   --sidebar: #F8FAFC;
@@ -115,10 +115,10 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: var(--radius);
+  --radius-md: calc(var(--radius) + 2px);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);

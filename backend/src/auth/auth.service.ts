@@ -61,6 +61,7 @@ export class AuthService {
         name: user.name,
         tenantId: tenant.id,
         role: user.role,
+        language: user.language,
       },
       ...tokens,
     };
@@ -69,13 +70,18 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
-    const user = await this.prisma.user.findFirst({
-      where: { email, deletedAt: null },
-      include: { tenant: true },
-    });
+    let user;
+    try {
+      user = await this.prisma.user.findFirst({
+        where: { email },
+      });
+    } catch (error) {
+      console.error('Database error during login:', error);
+      throw new UnauthorizedException(`Database connection error: ${error.message}`);
+    }
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('the user not exist');
     }
 
     // Verify password
@@ -100,6 +106,7 @@ export class AuthService {
         name: user.name,
         tenantId: user.tenantId,
         role: user.role,
+        language: user.language,
       },
       ...tokens,
     };
@@ -167,6 +174,7 @@ export class AuthService {
         email: true,
         name: true,
         role: true,
+        language: true,
         createdAt: true,
         tenant: {
           select: {
@@ -183,7 +191,7 @@ export class AuthService {
     return user;
   }
 
-  async updateProfile(userId: string, data: { name?: string; email?: string }) {
+  async updateProfile(userId: string, data: { name?: string; email?: string; language?: string }) {
     return this.prisma.user.update({
       where: { id: userId },
       data,
@@ -192,6 +200,7 @@ export class AuthService {
         email: true,
         name: true,
         role: true,
+        language: true,
       },
     });
   }

@@ -99,6 +99,7 @@ export class AuthController {
       name: freshUser.name,
       tenantId: user.tenantId,
       role: freshUser.role,
+      language: freshUser.language,
     };
   }
 }

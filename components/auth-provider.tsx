@@ -10,6 +10,7 @@ export interface User {
   name: string | null;
   tenantId: string;
   role: string;
+  language: string;
 }
 
 interface AuthContextType {

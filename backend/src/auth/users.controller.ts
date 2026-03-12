@@ -26,7 +26,7 @@ export class UsersController {
   @Patch('profile')
   async updateProfile(
     @CurrentUser() user: CurrentUserPayload,
-    @Body() data: { name?: string; email?: string }
+    @Body() data: { name?: string; email?: string; language?: string }
   ) {
     this.logger.log(`[Users] Updating profile for ${user.userId}`);
     return this.authService.updateProfile(user.userId, data);
